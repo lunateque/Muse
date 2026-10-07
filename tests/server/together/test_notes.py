@@ -41,6 +41,27 @@ async def test_notes_keep_one_order_all_day_and_reshuffle_the_next(
     assert (await client.get("/api/notes")).status_code == 401
 
 
+async def test_song_notes_carry_their_track_and_lose_missing_ones(
+    alice: httpx.AsyncClient, bob: httpx.AsyncClient, settings: Settings, track_id: int
+) -> None:
+    settings.paths.notes_dir.mkdir()
+    track = (await alice.get(f"/api/track/{track_id}")).json()
+    document = {
+        "notes": [
+            {"kind": "song", "text": "  наша  ", "track_id": track_id},
+            {"kind": "song", "text": "gone", "track_id": 999_999},
+            {"kind": "song", "text": "no track"},
+            {"kind": "line", "text": "plain", "track_id": track_id},
+            {"kind": "song", "text": "bool id", "track_id": True},
+        ]
+    }
+    (settings.paths.notes_dir / "bob.json").write_text(json.dumps(document), encoding="utf-8")
+
+    notes = (await bob.get("/api/notes")).json()["notes"]
+
+    assert notes == [{"kind": "song", "text": "наша", "track_id": track_id, "track": track}]
+
+
 async def test_valid_notes_are_trimmed_and_invalid_ones_are_skipped_with_a_log(
     tmp_path: Path,
 ) -> None:
@@ -50,12 +71,17 @@ async def test_valid_notes_are_trimmed_and_invalid_ones_are_skipped_with_a_log(
             {"kind": "line", "text": "met in May", "date": "2024-05-01"},
             {"kind": "line", "text": "no date", "date": None},
             {"kind": "line", "text": "x" * 280},
+            {"kind": "song", "text": "our song", "track_id": 7},
             {"kind": "quote", "text": "unknown kind"},
             {"kind": "fact", "text": "   "},
             {"kind": "fact", "text": "x" * 281},
             {"kind": "fact", "text": 7},
             {"kind": "fact", "text": "short date", "date": "2024-5-1"},
             {"kind": "fact", "text": "empty date", "date": ""},
+            {"kind": "song", "text": "no id"},
+            {"kind": "song", "text": "float id", "track_id": 7.5},
+            {"kind": "song", "text": "bool id", "track_id": True},
+            {"kind": "fact", "text": "stray id", "track_id": 7},
             "plain string",
         ]
     }
@@ -69,8 +95,9 @@ async def test_valid_notes_are_trimmed_and_invalid_ones_are_skipped_with_a_log(
         {"kind": "line", "text": "met in May", "date": "2024-05-01"},
         {"kind": "line", "text": "no date"},
         {"kind": "line", "text": "x" * 280},
+        {"kind": "song", "text": "our song", "track_id": 7},
     ]
-    assert [entry["event"] for entry in logs] == ["notes: bob: skipped 7 invalid entries"]
+    assert [entry["event"] for entry in logs] == ["notes: bob: skipped 11 invalid entries"]
 
 
 @pytest.mark.parametrize(

@@ -16,7 +16,7 @@ from muse.notifications.domain import (
 from muse.shared.clock import Clock
 from muse.shared.db import UnitOfWork
 from muse.shared.errors import DomainError
-from muse.together.domain import LetterSent, OursChanged
+from muse.together.domain import LetterSent, OursChanged, PinSet, SecretFound
 
 
 class Notifier:
@@ -99,4 +99,30 @@ class PushReactions:
             f"🎵 {track['title']} · {track['artist']}",
             "/ours",
             f"ours-{event.track_id}",
+        )
+
+    async def secret_found(self, event: SecretFound) -> None:
+        track = (await self.catalog.track_rows([event.track_id])).get(event.track_id)
+        finder = self.users.get(event.recipient)
+        if track is None or finder is None:
+            return
+        await self.notifier.notify(
+            event.sender,
+            f"{finder.beast}: записка найдена",
+            f"🎵 {track['title']} · {track['artist']}",
+            "/us",
+            f"secret-{event.secret_id}",
+        )
+
+    async def pin_set(self, event: PinSet) -> None:
+        track = (await self.catalog.track_rows([event.track_id])).get(event.track_id)
+        chooser = self.users.get(event.set_by)
+        if track is None or chooser is None:
+            return
+        await self.notifier.notify(
+            event.for_user,
+            f"{chooser.beast}: песня дня для тебя",
+            f"🎵 {track['title']} · {track['artist']}",
+            "/",
+            f"pin-{event.day}",
         )

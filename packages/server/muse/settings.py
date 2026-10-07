@@ -29,6 +29,10 @@ class PathsSettings(Section):
         return self.data_dir / "users.json"
 
     @property
+    def dates_file(self) -> Path:
+        return self.data_dir / "dates.json"
+
+    @property
     def user_db(self) -> Path:
         return self.data_dir / "muse.sqlite"
 

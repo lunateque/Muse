@@ -6,7 +6,7 @@ from muse.notifications.service import PushReactions
 from muse.pet.domain import QuestAlbumChosen
 from muse.pet.service import PetPushes, PetReactions
 from muse.shared.events import EventBus
-from muse.together.domain import LetterSent, OursChanged, TogetherAccrued
+from muse.together.domain import LetterSent, OursChanged, PinSet, SecretFound, TogetherAccrued
 
 
 class EventsProvider(Provider):
@@ -19,6 +19,8 @@ class EventsProvider(Provider):
         bus.subscribe(LikeChanged, pushes.mutual_like)
         bus.subscribe(LetterSent, pushes.letter)
         bus.subscribe(OursChanged, pushes.ours_added)
+        bus.subscribe(SecretFound, pushes.secret_found)
+        bus.subscribe(PinSet, pushes.pin_set)
         return bus
 
     @decorate

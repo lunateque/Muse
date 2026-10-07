@@ -13,12 +13,15 @@ FOLLOW_TTL_MS = 40000
 FOLLOW_POLL_S = 0.25
 SHARED_STEP_MS = 30000
 LETTER_MAX_CHARS = 280
-NOTE_KINDS = ("fact", "line")
+NOTE_KINDS = ("fact", "line", "song")
 NOTE_MAX_CHARS = 280
 NOTE_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+PIN_MAX_CHARS = 140
 PARTNER_FOLLOWS = "partner follows you"
 BAD_TEXT = "bad text"
+BAD_PIN = "bad pin"
 NO_LETTER = "no letter"
+NO_WAITING = "no secret"
 
 
 class PartnerNow(TypedDict):
@@ -78,10 +81,36 @@ class Note(TypedDict):
     kind: str
     text: str
     date: NotRequired[str]
+    track_id: NotRequired[int]
+    track: NotRequired[Track]
 
 
 class NotesView(TypedDict):
     notes: list[Note]
+
+
+class SecretView(TypedDict):
+    id: int
+    track: Track
+    text: str
+    created_at: int
+    found_at: int | None
+
+
+class SecretList(TypedDict):
+    hidden: list[SecretView]
+    found: list[SecretView]
+
+
+class PinView(TypedDict):
+    track: Track
+    text: str
+    set_at: int
+
+
+class PinsView(TypedDict):
+    for_me: PinView | None
+    from_me: PinView | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,6 +126,22 @@ class LetterSent(Event):
     letter_id: int
     track_id: int
     text: str
+
+
+@dataclass(frozen=True, slots=True)
+class SecretFound(Event):
+    sender: str
+    recipient: str
+    secret_id: int
+    track_id: int
+
+
+@dataclass(frozen=True, slots=True)
+class PinSet(Event):
+    for_user: str
+    day: str
+    track_id: int
+    set_by: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -190,6 +235,39 @@ class Letter:
 
 
 @dataclass(frozen=True, slots=True)
+class Secret:
+    id: int
+    sender: str
+    recipient: str
+    track_id: int
+    text: str
+    created_at: int
+    found_at: int | None
+
+    def view(self, tracks: dict[int, Track]) -> SecretView:
+        return {
+            "id": self.id,
+            "track": tracks[self.track_id],
+            "text": self.text,
+            "created_at": self.created_at,
+            "found_at": self.found_at,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class Pinned:
+    for_user: str
+    day: str
+    track_id: int
+    text: str
+    set_by: str
+    set_at: int
+
+    def view(self, track: Track) -> PinView:
+        return {"track": track, "text": self.text, "set_at": self.set_at}
+
+
+@dataclass(frozen=True, slots=True)
 class OursMark:
     track_id: int
     added_by: str
@@ -203,10 +281,22 @@ def letter_text(text: str) -> str:
     return body
 
 
+def pin_text(text: str) -> str:
+    body = text.strip()
+    if len(body) > PIN_MAX_CHARS:
+        raise DomainError(BAD_PIN)
+    return body
+
+
 def valid_note(note: object) -> bool:
     if not isinstance(note, dict) or note.get("kind") not in NOTE_KINDS:
         return False
-    text, day = note.get("text"), note.get("date")
+    text, day, track = note.get("text"), note.get("date"), note.get("track_id")
+    if note["kind"] == "song":
+        if not isinstance(track, int) or isinstance(track, bool):
+            return False
+    elif track is not None:
+        return False
     return (
         isinstance(text, str)
         and 0 < len(text.strip()) <= NOTE_MAX_CHARS
@@ -219,6 +309,7 @@ def note_view(note: Mapping[str, Any]) -> Note:
         "kind": note["kind"],
         "text": note["text"].strip(),
         **({"date": note["date"]} if note.get("date") else {}),
+        **({"track_id": note["track_id"]} if note.get("track_id") is not None else {}),
     }
 
 
@@ -268,3 +359,27 @@ class OursList(Protocol):
 
 class NotesSource(Protocol):
     async def notes(self, user_id: str) -> list[Note]: ...
+
+
+class SecretBox(Protocol):
+    async def hide(
+        self, sender: str, recipient: str, track_id: int, text: str, now: int
+    ) -> int: ...
+
+    async def waiting_for(self, recipient: str, track_id: int) -> Secret | None: ...
+
+    async def mark_found(self, secret_id: int, now: int) -> None: ...
+
+    async def hidden_by(self, sender: str) -> list[Secret]: ...
+
+    async def found_by(self, recipient: str) -> list[Secret]: ...
+
+    async def drop(self, secret_id: int) -> None: ...
+
+
+class PinBoard(Protocol):
+    async def set(self, for_user: str, day: str, pin: Pinned) -> None: ...
+
+    async def remove(self, for_user: str, day: str, set_by: str) -> None: ...
+
+    async def of_day(self, day: str) -> list[Pinned]: ...

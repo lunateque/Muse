@@ -10,3 +10,8 @@ class LiveBody(msgspec.Struct):
 class LetterBody(msgspec.Struct):
     track_id: int
     text: str
+
+
+class PinBody(msgspec.Struct):
+    track_id: int
+    text: str = ""

@@ -90,7 +90,7 @@ def test_a_fresh_database_matches_the_unversioned_schema(tmp_path: Path) -> None
     assert query(fresh, "SELECT id, food, joy, energy, clean, sick FROM pet") == [
         (1, 80.0, 80.0, 80.0, 80.0, 0)
     ]
-    assert query(fresh, "SELECT version_num FROM alembic_version") == [("0001",)]
+    assert query(fresh, "SELECT version_num FROM alembic_version") == [("0002",)]
 
 
 def test_upgrading_an_unversioned_database_keeps_every_row(tmp_path: Path) -> None:
@@ -112,7 +112,7 @@ def test_upgrading_an_unversioned_database_keeps_every_row(tmp_path: Path) -> No
     assert query(path, "SELECT * FROM plays") == [("alice", 7, 1000, 40000, 1, 0, "album:3")]
     assert query(path, "SELECT * FROM likes") == [("bob", 7, 2000)]
     assert query(path, "SELECT user FROM sessions") == [("alice",)]
-    assert query(path, "SELECT version_num FROM alembic_version") == [("0001",)]
+    assert query(path, "SELECT version_num FROM alembic_version") == [("0002",)]
 
 
 def test_the_cli_upgrades_the_configured_database(configured: Path) -> None:
@@ -125,12 +125,12 @@ def test_restore_puts_back_the_database_saved_before_a_broken_upgrade(configured
     assert main(["db", "upgrade"]) == 0
     change(configured, "INSERT INTO likes VALUES ('bob', 7, 2000);")
     assert main(["db", "snapshot"]) == 0
-    change(configured, "DROP TABLE likes; UPDATE alembic_version SET version_num='0002';")
+    change(configured, "DROP TABLE likes; UPDATE alembic_version SET version_num='0003';")
 
     assert main(["db", "restore"]) == 0
 
     assert query(configured, "SELECT * FROM likes") == [("bob", 7, 2000)]
-    assert query(configured, "SELECT version_num FROM alembic_version") == [("0001",)]
+    assert query(configured, "SELECT version_num FROM alembic_version") == [("0002",)]
     assert query(configured, "PRAGMA integrity_check") == [("ok",)]
 
 

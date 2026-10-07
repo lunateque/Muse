@@ -2,15 +2,25 @@ import random
 
 import anyio
 
+from muse.catalog.domain import Track
 from muse.catalog.service import Catalog
 from muse.identity.domain import Users
 from muse.shared.clock import Clock
 from muse.shared.db import UnitOfWork
 from muse.shared.errors import DomainError
 from muse.shared.events import EventBus
+from muse.together.dates import (
+    DatesSource,
+    DatesView,
+    parse_dates,
+    todays,
+    together_days,
+    together_since,
+)
 from muse.together.domain import (
     FOLLOW_POLL_S,
     NO_LETTER,
+    NO_WAITING,
     PARTNER_FOLLOWS,
     Beat,
     FollowView,
@@ -26,12 +36,22 @@ from muse.together.domain import (
     OursList,
     OursTrack,
     OursView,
+    PinBoard,
+    Pinned,
+    PinSet,
+    PinsView,
+    Secret,
+    SecretBox,
+    SecretFound,
+    SecretList,
+    SecretView,
     TogetherAccrued,
     TogetherLedger,
     letter_text,
     live_partner,
     mirror,
     mirrored_track_id,
+    pin_text,
     shared_seconds,
 )
 
@@ -193,11 +213,146 @@ class Ours:
 
 
 class Notes:
-    def __init__(self, source: NotesSource, clock: Clock) -> None:
+    def __init__(self, source: NotesSource, catalog: Catalog, clock: Clock) -> None:
         self.source = source
+        self.catalog = catalog
         self.clock = clock
 
     async def daily(self, user_id: str) -> NotesView:
         pool = await self.source.notes(user_id)
+        tracks = await self.catalog.track_rows(
+            [note["track_id"] for note in pool if note.get("track_id") is not None]
+        )
+        enriched = [
+            {**note, "track": tracks[note["track_id"]]}
+            if note.get("track_id") is not None
+            else note
+            for note in pool
+            if note.get("track_id") is None or note["track_id"] in tracks
+        ]
         shuffle = random.Random(f"{user_id}:notes:{self.clock.today()}")
-        return {"notes": shuffle.sample(pool, len(pool))}
+        return {"notes": shuffle.sample(enriched, len(enriched))}
+
+
+class Secrets:
+    def __init__(
+        self,
+        secrets: SecretBox,
+        catalog: Catalog,
+        users: Users,
+        clock: Clock,
+        bus: EventBus,
+        uow: UnitOfWork,
+    ) -> None:
+        self.secrets = secrets
+        self.catalog = catalog
+        self.users = users
+        self.clock = clock
+        self.bus = bus
+        self.uow = uow
+
+    async def hide(self, user_id: str, track_id: int, text: str) -> dict[str, int]:
+        body = letter_text(text)
+        await self.catalog.playable_duration(track_id)
+        recipient = self.users.partner_id(user_id)
+        secret_id = await self.secrets.hide(user_id, recipient, track_id, body, self.clock.now_ms())
+        await self.uow.commit()
+        return {"id": secret_id}
+
+    async def find(self, user_id: str, track_id: int) -> dict[str, SecretView | None]:
+        found = await self.secrets.waiting_for(user_id, track_id)
+        if found is None:
+            return {"secret": None}
+        now = self.clock.now_ms()
+        await self.secrets.mark_found(found.id, now)
+        await self.bus.publish(SecretFound(found.sender, user_id, found.id, track_id))
+        await self.uow.commit()
+        return {"secret": {**found.view(await self._tracks([found])), "found_at": now}}
+
+    async def listing(self, user_id: str) -> SecretList:
+        hidden = await self.secrets.hidden_by(user_id)
+        found = await self.secrets.found_by(user_id)
+        tracks = await self._tracks([*hidden, *found])
+        return {
+            "hidden": [secret.view(tracks) for secret in hidden],
+            "found": [secret.view(tracks) for secret in found],
+        }
+
+    async def drop(self, user_id: str, secret_id: int) -> None:
+        hidden = await self.secrets.hidden_by(user_id)
+        waiting = next((secret for secret in hidden if secret.id == secret_id), None)
+        if waiting is None or waiting.found_at is not None:
+            raise DomainError(NO_WAITING)
+        await self.secrets.drop(secret_id)
+        await self.uow.commit()
+
+    async def _tracks(self, secrets: list[Secret]) -> dict[int, Track]:
+        return await self.catalog.track_rows([secret.track_id for secret in secrets])
+
+
+class Pins:
+    def __init__(
+        self,
+        pins: PinBoard,
+        catalog: Catalog,
+        users: Users,
+        clock: Clock,
+        bus: EventBus,
+        uow: UnitOfWork,
+    ) -> None:
+        self.pins = pins
+        self.catalog = catalog
+        self.users = users
+        self.clock = clock
+        self.bus = bus
+        self.uow = uow
+
+    async def set(self, user_id: str, track_id: int, text: str) -> None:
+        body = pin_text(text)
+        await self.catalog.playable_duration(track_id)
+        day = self.clock.today().isoformat()
+        for_user = self.users.partner_id(user_id)
+        pin = Pinned(for_user, day, track_id, body, user_id, self.clock.now_ms())
+        await self.pins.set(for_user, day, pin)
+        await self.bus.publish(PinSet(for_user, day, track_id, user_id))
+        await self.uow.commit()
+
+    async def remove(self, user_id: str) -> None:
+        await self.pins.remove(
+            self.users.partner_id(user_id), self.clock.today().isoformat(), user_id
+        )
+        await self.uow.commit()
+
+    async def view(self, user_id: str) -> PinsView:
+        partner = self.users.partner_id(user_id)
+        day = self.clock.today().isoformat()
+        rows = await self.pins.of_day(day)
+        for_me = next((pin for pin in rows if pin.for_user == user_id), None)
+        from_me = next((pin for pin in rows if pin.for_user == partner), None)
+        tracks = await self.catalog.track_rows(
+            [pin.track_id for pin in (for_me, from_me) if pin is not None]
+        )
+        mine = (
+            for_me.view(tracks[for_me.track_id]) if for_me and for_me.track_id in tracks else None
+        )
+        theirs = (
+            from_me.view(tracks[from_me.track_id])
+            if from_me and from_me.track_id in tracks
+            else None
+        )
+        return {"for_me": mine, "from_me": theirs}
+
+
+class Dates:
+    def __init__(self, source: DatesSource, clock: Clock) -> None:
+        self.source = source
+        self.clock = clock
+
+    async def view(self) -> DatesView:
+        document = await self.source.load()
+        today = self.clock.today()
+        since = together_since(document)
+        return {
+            "together_days": together_days(since, today) if since else None,
+            "today": todays(parse_dates(document), today),
+        }

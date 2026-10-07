@@ -60,10 +60,19 @@ from muse.pet.service import (
     Quests,
 )
 from muse.settings import Settings
-from muse.together.domain import LetterBox, NotesSource, OursList, TogetherLedger
+from muse.together.dates import DatesSource
+from muse.together.domain import (
+    LetterBox,
+    NotesSource,
+    OursList,
+    PinBoard,
+    SecretBox,
+    TogetherLedger,
+)
+from muse.together.infra.dates import DatesFile
 from muse.together.infra.notes import NotesFiles
-from muse.together.infra.sql import SqlLetters, SqlOurs, SqlTogether
-from muse.together.service import Following, Letters, Live, Notes, Ours
+from muse.together.infra.sql import SqlLetters, SqlOurs, SqlPins, SqlSecrets, SqlTogether
+from muse.together.service import Dates, Following, Letters, Live, Notes, Ours, Pins, Secrets
 
 
 class ContextsProvider(Provider):
@@ -138,15 +147,24 @@ class ContextsProvider(Provider):
     together_ledger = provide(SqlTogether, provides=TogetherLedger)
     letter_box = provide(SqlLetters, provides=LetterBox)
     ours_list = provide(SqlOurs, provides=OursList)
+    secret_box = provide(SqlSecrets, provides=SecretBox)
+    pin_board = provide(SqlPins, provides=PinBoard)
     live = provide(Live)
     following = provide(Following)
     letters = provide(Letters)
     ours = provide(Ours)
     notes = provide(Notes)
+    secrets = provide(Secrets)
+    pins = provide(Pins)
+    dates = provide(Dates)
 
     @provide(scope=Scope.APP)
     def notes_source(self, settings: Settings) -> NotesSource:
         return NotesFiles(settings.paths.notes_dir)
+
+    @provide(scope=Scope.APP)
+    def dates_source(self, settings: Settings) -> DatesSource:
+        return DatesFile(settings.paths.dates_file)
 
     play_stats = provide(SqlStats, provides=PlayStats)
     listening_stats = provide(ListeningStats)

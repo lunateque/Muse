@@ -33,6 +33,12 @@ Copy `deploy/users.example.json` to `users.json` in the data directory, put in y
 set passwords with `uv run muse passwd <user-id>`. `animal` and `theme` go to the web client as
 they are; `emoji` and `nick` sign the push notifications.
 
+Optionally copy `deploy/dates.example.json` to `dates.json` in the data directory: it feeds the
+«Вместе N дней» stamp and the date cards on the home screen, and the song of the day (`pins`)
+lives in the user database. Song notes (`kind: "song"` in the per-user files in the `notes`
+directory) carry a `track_id` and show the song card; a note whose track left the catalog is
+skipped until the track returns.
+
 The catalog is a read-only SQLite file in the schema of `tests/fixtures/catalog_schema.sql`,
 with track paths relative to the library. The web client is not part of this repository; the
 server serves whatever is built into `web_dir`. User-facing texts are in Russian.

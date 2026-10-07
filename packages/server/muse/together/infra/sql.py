@@ -1,5 +1,5 @@
 from muse.shared.db import Row, UnitOfWork
-from muse.together.domain import Letter, OursMark
+from muse.together.domain import Letter, OursMark, Pinned, Secret
 
 
 def letter(row: Row) -> Letter:
@@ -25,6 +25,88 @@ class SqlTogether:
             (day, seconds),
         )
         return await self.uow.value("SELECT seconds FROM together WHERE day=?", (day,))
+
+
+def secret(row: Row) -> Secret:
+    return Secret(
+        id=row["id"],
+        sender=row["sender"],
+        recipient=row["recipient"],
+        track_id=row["track_id"],
+        text=row["text"],
+        created_at=row["created_at"],
+        found_at=row["found_at"],
+    )
+
+
+class SqlSecrets:
+    def __init__(self, uow: UnitOfWork) -> None:
+        self.uow = uow
+
+    async def hide(self, sender: str, recipient: str, track_id: int, text: str, now: int) -> int:
+        await self.uow.execute(
+            "DELETE FROM secrets WHERE sender=? AND track_id=? AND found_at IS NULL",
+            (sender, track_id),
+        )
+        result = await self.uow.execute(
+            "INSERT INTO secrets(sender, recipient, track_id, text, created_at) VALUES (?,?,?,?,?)",
+            (sender, recipient, track_id, text, now),
+        )
+        return result.lastrowid
+
+    async def waiting_for(self, recipient: str, track_id: int) -> Secret | None:
+        row = await self.uow.row(
+            "SELECT * FROM secrets WHERE recipient=? AND track_id=? AND found_at IS NULL",
+            (recipient, track_id),
+        )
+        return secret(row) if row else None
+
+    async def mark_found(self, secret_id: int, now: int) -> None:
+        await self.uow.execute(
+            "UPDATE secrets SET found_at=? WHERE id=? AND found_at IS NULL", (now, secret_id)
+        )
+
+    async def hidden_by(self, sender: str) -> list[Secret]:
+        rows = await self.uow.rows(
+            "SELECT * FROM secrets WHERE sender=? ORDER BY created_at DESC, id DESC LIMIT 100",
+            (sender,),
+        )
+        return [secret(row) for row in rows]
+
+    async def found_by(self, recipient: str) -> list[Secret]:
+        rows = await self.uow.rows(
+            "SELECT * FROM secrets WHERE recipient=? AND found_at IS NOT NULL "
+            "ORDER BY found_at DESC, id DESC LIMIT 100",
+            (recipient,),
+        )
+        return [secret(row) for row in rows]
+
+    async def drop(self, secret_id: int) -> None:
+        await self.uow.execute("DELETE FROM secrets WHERE id=?", (secret_id,))
+
+
+class SqlPins:
+    def __init__(self, uow: UnitOfWork) -> None:
+        self.uow = uow
+
+    async def set(self, for_user: str, day: str, pin: Pinned) -> None:
+        await self.uow.execute(
+            "INSERT INTO pins(for_user, day, track_id, text, set_by, set_at) VALUES (?,?,?,?,?,?) "
+            "ON CONFLICT(for_user, day) DO UPDATE SET track_id=excluded.track_id, "
+            "text=excluded.text, set_by=excluded.set_by, set_at=excluded.set_at",
+            (for_user, day, pin.track_id, pin.text, pin.set_by, pin.set_at),
+        )
+
+    async def remove(self, for_user: str, day: str, set_by: str) -> None:
+        await self.uow.execute(
+            "DELETE FROM pins WHERE for_user=? AND day=? AND set_by=?", (for_user, day, set_by)
+        )
+
+    async def of_day(self, day: str) -> list[Pinned]:
+        rows = await self.uow.rows(
+            "SELECT for_user, day, track_id, text, set_by, set_at FROM pins WHERE day=?", (day,)
+        )
+        return [Pinned(**row) for row in rows]
 
 
 class SqlLetters:
