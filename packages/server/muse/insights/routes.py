@@ -2,10 +2,10 @@ from typing import Annotated, Any
 
 from dishka.integrations.litestar import FromDishka, inject
 from litestar import Request, Router, get
-from litestar.params import FromQuery, QueryParameter
+from litestar.params import FromPath, FromQuery, QueryParameter
 
 from muse.identity.domain import User
-from muse.insights.domain import BAD_WHO, StatsSummary, UsStats
+from muse.insights.domain import BAD_WHO, StatsSummary, TrackPlays, UsStats
 from muse.insights.service import ListeningStats
 from muse.shared.errors import domain_errors
 
@@ -33,4 +33,14 @@ async def stats_us(
     return await listening.us(request.user.id, days)
 
 
-router = Router("/api", route_handlers=[stats, stats_us], exception_handlers=domain_errors(ERRORS))
+@get("/stats/track/{tid:int}")
+@inject
+async def stats_track(
+    tid: FromPath[int], request: Request[User, str, Any], listening: FromDishka[ListeningStats]
+) -> TrackPlays:
+    return await listening.track(request.user.id, tid)
+
+
+router = Router(
+    "/api", route_handlers=[stats, stats_us, stats_track], exception_handlers=domain_errors(ERRORS)
+)

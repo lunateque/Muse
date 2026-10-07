@@ -32,6 +32,7 @@ API = {
     ("GET", "/api/likes"),
     ("GET", "/api/stats"),
     ("GET", "/api/stats/us"),
+    ("GET", "/api/stats/track/{int}"),
     ("GET", "/api/push/key"),
     ("POST", "/api/push/subscribe"),
     ("POST", "/api/push/unsubscribe"),

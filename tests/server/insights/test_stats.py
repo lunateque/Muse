@@ -156,3 +156,22 @@ async def test_together_minutes_cover_today_and_the_days_before(
     ]
 
     assert minutes == [2, 12, 112]
+
+
+async def test_track_plays_count_both_listeners_all_time(
+    alice: Client, bob: Client, track_id: int, other_track_id: int, clock: ManualClock
+) -> None:
+    await play(alice, track_id, 40_000, clock.ms - 400 * 86_400_000)
+    for offset in range(2):
+        await play(alice, track_id, 40_000, clock.ms + offset)
+    await play(alice, track_id, 10_000, clock.ms + 2)
+    await play(alice, other_track_id, 40_000, clock.ms + 3)
+    await play(bob, track_id, 40_000, clock.ms + 4)
+
+    as_alice = (await alice.get(f"/api/stats/track/{track_id}")).json()
+    as_bob = (await bob.get(f"/api/stats/track/{track_id}")).json()
+    unknown = (await alice.get("/api/stats/track/999_999")).json()
+
+    assert (as_alice["me"], as_alice["partner"]) == (3, 1)
+    assert (as_bob["me"], as_bob["partner"]) == (1, 3)
+    assert unknown == {"me": 0, "partner": 0}

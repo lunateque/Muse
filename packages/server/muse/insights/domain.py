@@ -30,6 +30,11 @@ class SharedSong(Track):
     partner: int
 
 
+class TrackPlays(TypedDict):
+    me: int
+    partner: int
+
+
 class LetterCounts(TypedDict):
     me: int
     partner: int
@@ -86,6 +91,10 @@ class PlayStats(Protocol):
     async def shared_songs(
         self, user_id: str, partner_id: str, since_ms: int
     ) -> list[tuple[int, int, int]]: ...
+
+    async def track_plays(
+        self, user_id: str, partner_id: str, track_id: int
+    ) -> tuple[int, int]: ...
 
     async def together_seconds(self, since_day: str) -> float: ...
 

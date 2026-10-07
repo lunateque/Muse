@@ -12,6 +12,7 @@ from muse.insights.domain import (
     PlayStats,
     SharedSong,
     StatsSummary,
+    TrackPlays,
     UsStats,
     common_artists,
     hours_histogram,
@@ -82,3 +83,9 @@ class ListeningStats:
             "common_artists": common,
             "song": song,
         }
+
+    async def track(self, user_id: str, track_id: int) -> TrackPlays:
+        me, partner = await self.stats.track_plays(
+            user_id, self.users.partner_id(user_id), track_id
+        )
+        return {"me": me, "partner": partner}

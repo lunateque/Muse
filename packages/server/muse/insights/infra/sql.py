@@ -20,6 +20,10 @@ SHARED_SONGS = (
     f"WHERE p.started_at>=? AND {COUNTED} GROUP BY p.track_id HAVING a>=1 AND b>=1 "
     "ORDER BY MIN(a, b) DESC, a + b DESC LIMIT 5"
 )
+TRACK_PLAYS = (
+    f"SELECT COALESCE(SUM(p.user=?), 0) a, COALESCE(SUM(p.user=?), 0) b {PLAYS_LIB}"
+    f"WHERE p.user IN (?, ?) AND p.track_id=? AND {COUNTED}"
+)
 
 
 class SqlStats:
@@ -51,6 +55,12 @@ class SqlStats:
     ) -> list[tuple[int, int, int]]:
         rows = await self.uow.rows(SHARED_SONGS, (user_id, partner_id, since_ms))
         return [(row["track_id"], row["a"], row["b"]) for row in rows]
+
+    async def track_plays(self, user_id: str, partner_id: str, track_id: int) -> tuple[int, int]:
+        (row,) = await self.uow.rows(
+            TRACK_PLAYS, (user_id, partner_id, user_id, partner_id, track_id)
+        )
+        return row["a"], row["b"]
 
     async def together_seconds(self, since_day: str) -> float:
         return await self.uow.value(
