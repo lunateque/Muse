@@ -1,11 +1,17 @@
+import copy
+import json
 import sqlite3
 import time
+from typing import Any
 
 import httpx
+import pytest
 from litestar import Litestar
+from litestar.testing import AsyncTestClient
 
+from muse.app import create_app
 from muse.settings import Settings
-from tests.server.support import PASSWORDS, WRITE, browser
+from tests.server.support import ORIGIN, PASSWORDS, WRITE, browser, signed_in
 
 
 def flags(cookie: str) -> set[str]:
@@ -82,3 +88,22 @@ async def test_a_malformed_login_is_a_422_list(client: httpx.AsyncClient) -> Non
 
     assert response.status_code == 422
     assert isinstance(response.json()["detail"], list)
+
+
+@pytest.mark.parametrize("cover_colors", [True, False])
+async def test_me_reports_the_cover_colors_flag(
+    cover_colors: bool, settings: Settings, users_document: dict[str, Any]
+) -> None:
+    document = copy.deepcopy(users_document)
+    if cover_colors:
+        document["users"][0]["cover_colors"] = True
+    (settings.paths.users_file).write_text(json.dumps(document), encoding="utf-8")
+
+    app = create_app(settings)
+    async with AsyncTestClient(app=app, base_url=ORIGIN):
+        alice = await signed_in(app, "alice")
+        me = (await alice.get("/api/me")).json()
+        await alice.aclose()
+
+    assert me["cover_colors"] is cover_colors
+    assert "cover_colors" not in me["partner"]

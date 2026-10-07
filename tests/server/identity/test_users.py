@@ -39,6 +39,7 @@ def test_each_user_knows_the_partner_and_how_the_client_sees_them(
         "gen": "Алиса",
         "dat": "Алиса",
         "author": False,
+        "cover_colors": False,
         "partner": {
             "id": "bob",
             "name": "Боб",
@@ -49,7 +50,38 @@ def test_each_user_knows_the_partner_and_how_the_client_sees_them(
             "author": True,
         },
     }
+    bob_me = users.me(bob)
+    assert bob_me["cover_colors"] is False
+    assert "cover_colors" not in bob_me["partner"]
     assert (alice.beast, bob.beast) == ("🦊 Лисёнок", "🐻 Мишка")
+
+
+def test_cover_colors_is_parsed_from_the_document(
+    users_document: dict[str, Any],
+) -> None:
+    document = copy.deepcopy(users_document)
+    document["users"][0]["cover_colors"] = True
+    document["users"][1]["cover_colors"] = False
+    users = parse_users(document)
+
+    alice = users.get("alice")
+    bob = users.get("bob")
+    assert alice is not None
+    assert bob is not None
+    assert (users.me(alice)["cover_colors"], users.me(bob)["cover_colors"]) == (True, False)
+
+
+def test_a_missing_cover_colors_defaults_to_false(
+    users_document: dict[str, Any],
+) -> None:
+    users = parse_users(copy.deepcopy(users_document))
+
+    alice = users.get("alice")
+    bob = users.get("bob")
+    assert alice is not None
+    assert bob is not None
+    assert (alice.cover_colors, bob.cover_colors) == (False, False)
+    assert "cover_colors" not in users.me(alice)["partner"]
 
 
 @pytest.mark.parametrize(

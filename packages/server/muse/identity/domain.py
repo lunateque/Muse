@@ -38,6 +38,7 @@ class PublicUser(TypedDict):
 
 
 class Me(PublicUser):
+    cover_colors: bool
     partner: PublicUser
 
 
@@ -53,6 +54,7 @@ class User:
     name_gen: str | None = None
     name_dat: str | None = None
     author: bool = False
+    cover_colors: bool = False
     password_hash: str | None = None
 
     @property
@@ -93,7 +95,11 @@ class Users:
         return next((user for user in self.all if normalize_login(user.login) == wanted), None)
 
     def me(self, user: User) -> Me:
-        return {**user.public(), "partner": self.partner(user).public()}
+        return {
+            **user.public(),
+            "cover_colors": user.cover_colors,
+            "partner": self.partner(user).public(),
+        }
 
 
 def _optional_text(value: object) -> str | None:
@@ -118,6 +124,7 @@ def _user(entry: dict[str, Any]) -> User:
         name_gen=_optional_text(entry.get("name_gen")),
         name_dat=_optional_text(entry.get("name_dat")),
         author=bool(entry.get("author")),
+        cover_colors=bool(entry.get("cover_colors")),
         password_hash=entry.get("password_hash") or None,
     )
 

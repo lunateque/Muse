@@ -7,11 +7,12 @@
       "name_gen": "Алекса",
       "name_dat": "Алексу",
       "animal": "fox",
-      "theme": "light",
+      "theme": "cocoa",
       "emoji": "🦊",
       "nick": "Лисёнок",
       "author": true,
-      "password_hash": null
+      "password_hash": null,
+      "cover_colors": true
     },
     {
       "id": "sam",
@@ -20,7 +21,7 @@
       "name_gen": "Сэма",
       "name_dat": "Сэму",
       "animal": "bear",
-      "theme": "dark",
+      "theme": "sage",
       "emoji": "🐻",
       "nick": "Мишка",
       "author": false,
