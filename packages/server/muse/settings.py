@@ -91,6 +91,10 @@ class CacheSettings(Section):
     redis_url: str = ""
 
 
+class MoodSettings(Section):
+    text_url: str = "http://127.0.0.1:8911"
+
+
 class ClockSettings(Section):
     timezone: str = "UTC"
 
@@ -118,6 +122,7 @@ class Settings(BaseSettings):
     push: PushSettings = Field(default_factory=PushSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
     clock: ClockSettings = Field(default_factory=ClockSettings)
+    moods: MoodSettings = Field(default_factory=MoodSettings)
 
     @classmethod
     def settings_customise_sources(

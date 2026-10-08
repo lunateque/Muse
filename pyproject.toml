@@ -28,6 +28,9 @@ fail_under = 96
 [tool.ty.environment]
 root = ["packages/server", "packages/agent", "."]
 
+[tool.ty.src]
+exclude = ["scripts/embed_catalog.py", "deploy/muse-text/app.py"]
+
 [tool.importlinter]
 root_packages = ["muse", "muse_agent"]
 

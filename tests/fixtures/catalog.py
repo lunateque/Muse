@@ -9,6 +9,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from tests.fixtures.audio import cover_jpeg, mp3_bytes, with_cover
+from tests.fixtures.vectors import write_vectors
 
 SCHEMA = Path(__file__).with_name("catalog_schema.sql")
 SEED = 1971
@@ -533,6 +534,13 @@ def write_catalog(path: Path, albums: list[AlbumRow], artists: list[Row]) -> Non
             connection.executemany(
                 TRACK_INSERT, [track.values() for album in albums for track in album.tracks]
             )
+            sounds = [
+                (track.track_id, album.plan.genre, track.artist, track.title)
+                for album in albums
+                for track in album.tracks
+                if track.status == "ok"
+            ]
+            write_vectors(connection, sounds, list(GENRES))
 
 
 def build_catalog(root: Path) -> FixtureCatalog:

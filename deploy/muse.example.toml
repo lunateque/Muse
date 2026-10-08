@@ -19,3 +19,6 @@ redis_url = "redis://127.0.0.1:6379/0"
 
 [clock]
 timezone = "UTC"
+
+[moods]
+text_url = "http://127.0.0.1:8911"

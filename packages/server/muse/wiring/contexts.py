@@ -28,12 +28,22 @@ from muse.daily.service import DailyMaker, DailyPlaylists
 from muse.diagnostics.domain import PlayerLog
 from muse.diagnostics.infra.player_log import PlayerLogFile
 from muse.diagnostics.service import PlayerLogService
-from muse.discovery.domain import GenreTracks, ListeningHistory
-from muse.discovery.infra.sql import SqlGenreTracks, SqlListeningHistory
-from muse.discovery.service import Mixes, Radio, RadioModelCache, RadioModels
+from muse.discovery.domain import GenreTracks, ListeningHistory, TextEncoder, VectorSource
+from muse.discovery.infra.sql import SqlGenreTracks, SqlListeningHistory, SqlVectors
+from muse.discovery.infra.text import HttpTextEncoder
+from muse.discovery.service import (
+    Mixes,
+    MoodMemo,
+    Moods,
+    Radio,
+    RadioModelCache,
+    RadioModels,
+    VectorIndexCache,
+    VectorIndexes,
+)
 from muse.home.domain import HomeQueries
 from muse.home.infra.sql import SqlHome
-from muse.home.service import ContinueCards, HomeFeed, HomeRefresh
+from muse.home.service import ContinueCards, HomeFeed, HomeRefresh, Shelves
 from muse.identity.domain import SessionStore
 from muse.identity.infra.sql import SqlSessions
 from muse.identity.service import LoginService, SessionService
@@ -179,8 +189,17 @@ class ContextsProvider(Provider):
     radio_models = provide(RadioModels, scope=Scope.APP)
     listening_history = provide(SqlListeningHistory, provides=ListeningHistory)
     genre_tracks = provide(SqlGenreTracks, provides=GenreTracks)
+    vector_source = provide(SqlVectors, provides=VectorSource, scope=Scope.APP)
+    vector_index_cache = provide(VectorIndexCache, scope=Scope.APP)
+    vector_indexes = provide(VectorIndexes, scope=Scope.APP)
+    mood_memo = provide(MoodMemo, scope=Scope.APP)
     radio = provide(Radio)
     mixes = provide(Mixes)
+    moods = provide(Moods)
+
+    @provide(scope=Scope.APP)
+    def text_encoder(self, settings: Settings, client: httpx.AsyncClient) -> TextEncoder:
+        return HttpTextEncoder(client, settings.moods.text_url)
 
     daily_store = provide(SqlDailyStore, provides=DailyStore)
     daily_taste = provide(SqlTasteSource, provides=TasteSource)
@@ -189,6 +208,7 @@ class ContextsProvider(Provider):
 
     home_queries = provide(SqlHome, provides=HomeQueries)
     continue_cards = provide(ContinueCards)
+    home_shelves = provide(Shelves)
     home_feed = provide(HomeFeed)
     home_refresh = provide(HomeRefresh)
 

@@ -1,0 +1,1287 @@
+[
+  {
+    "id": "dusk",
+    "title": "Сумерки",
+    "group": "Вечер и ночь",
+    "prompt": "mellow early evening music, relaxed mid-tempo groove, warm electric piano, soft drums, easygoing and cosy"
+  },
+  {
+    "id": "after-midnight",
+    "title": "После полуночи",
+    "group": "Вечер и ночь",
+    "prompt": "calm melancholic late night music, slow tempo, soft synth pads, sparse piano, hushed intimate vocals"
+  },
+  {
+    "id": "sleepless",
+    "title": "Не спится",
+    "group": "Вечер и ночь",
+    "prompt": "restless sleepless night, hazy ambient textures, slow pulsing bass, faint dreamy vocals, lonely and weightless"
+  },
+  {
+    "id": "lullaby",
+    "title": "Колыбельная",
+    "group": "Вечер и ночь",
+    "prompt": "soft lullaby to fall asleep, very quiet, gentle acoustic guitar or music box, slow, whispered vocals"
+  },
+  {
+    "id": "neon-city",
+    "title": "Неоновый город",
+    "group": "Вечер и ночь",
+    "prompt": "dark synthwave night city soundtrack, pulsing analog synthesizers, steady drum machine, cool and cinematic"
+  },
+  {
+    "id": "night-rap",
+    "title": "Ночной читок",
+    "group": "Вечер и ночь",
+    "prompt": "late night chill hip hop, slow boom bap drums, mellow keys, laid-back rapping, smoky mood"
+  },
+  {
+    "id": "rooftop-night",
+    "title": "На крыше",
+    "group": "Вечер и ночь",
+    "prompt": "dreamy indie night on a rooftop, shimmering guitars, soft drums, wistful relaxed vocals, open air feeling"
+  },
+  {
+    "id": "three-am",
+    "title": "Три часа ночи",
+    "group": "Вечер и ночь",
+    "prompt": "introspective 3am music, slow minimal beat, lo-fi textures, quiet confessional vocals"
+  },
+  {
+    "id": "dark-room",
+    "title": "Тёмная комната",
+    "group": "Вечер и ночь",
+    "prompt": "dark ambient drones, slow evolving synth pads, deep sub bass, no drums, mysterious heavy atmosphere"
+  },
+  {
+    "id": "moonlight",
+    "title": "Лунная дорожка",
+    "group": "Вечер и ночь",
+    "prompt": "gentle moonlit piano ballad, slow tempo, soft strings, delicate and tender, calm and airy"
+  },
+  {
+    "id": "last-dance",
+    "title": "Последний медляк",
+    "group": "Вечер и ночь",
+    "prompt": "slow late night dance, deep house at low tempo, warm bass, hypnotic groove, after-hours club"
+  },
+  {
+    "id": "stargazing",
+    "title": "Звёзды над головой",
+    "group": "Вечер и ночь",
+    "prompt": "spacious cosmic ambient, slow shimmering synths and guitar, dreamy reverb, wide open and calm"
+  },
+  {
+    "id": "night-jazz",
+    "title": "Ночной джаз",
+    "group": "Вечер и ночь",
+    "prompt": "smoky late night jazz, brushed drums, upright bass, muted trumpet and piano, relaxed swing"
+  },
+  {
+    "id": "sleepy-lofi",
+    "title": "Сонный лоу-фай",
+    "group": "Вечер и ночь",
+    "prompt": "sleepy lo-fi beats, dusty vinyl crackle, soft jazzy chords, slow head-nodding drums, no vocals"
+  },
+  {
+    "id": "whispers",
+    "title": "Шёпотом",
+    "group": "Вечер и ночь",
+    "prompt": "whispered intimate vocals, close microphone, very soft acoustic guitar or piano, slow bedroom recording"
+  },
+  {
+    "id": "candles",
+    "title": "Свечи и плед",
+    "group": "Вечер и ночь",
+    "prompt": "warm candlelit evening, soft acoustic soul, gentle piano, slow cosy tempo, tender vocals"
+  },
+  {
+    "id": "ru-night",
+    "title": "Русская ночь",
+    "group": "Вечер и ночь",
+    "prompt": "late night Russian-language indie, quiet guitars, slow lazy tempo, soft sung Russian vocals",
+    "lang": "ru"
+  },
+  {
+    "id": "sunrise-soft",
+    "title": "Проснуться мягко",
+    "group": "Утро и день",
+    "prompt": "gentle sunrise wake up music, soft acoustic guitar, light piano, slowly building warmth, calm and hopeful"
+  },
+  {
+    "id": "coffee-toast",
+    "title": "Кофе и тосты",
+    "group": "Утро и день",
+    "prompt": "relaxed breakfast music, light jazzy pop, acoustic guitar, easy mid-tempo groove, warm friendly vocals"
+  },
+  {
+    "id": "bright-start",
+    "title": "Бодрое утро",
+    "group": "Утро и день",
+    "prompt": "upbeat energetic morning pop, bright claps, cheerful driving tempo, catchy sunny vocals"
+  },
+  {
+    "id": "commute",
+    "title": "По пути на учёбу",
+    "group": "Утро и день",
+    "prompt": "commuting music, steady mid-tempo indie pop beat, light guitars, focused yet cheerful"
+  },
+  {
+    "id": "lazy-sunday",
+    "title": "Ленивое воскресенье",
+    "group": "Утро и день",
+    "prompt": "lazy sunday afternoon, slow warm soul and mellow indie, acoustic guitar, relaxed vocals"
+  },
+  {
+    "id": "lunch-break",
+    "title": "Обеденный перерыв",
+    "group": "Утро и день",
+    "prompt": "easy lunchtime music, light funk and groovy pop, bouncy bass, friendly feel-good mood"
+  },
+  {
+    "id": "golden-hour",
+    "title": "Золотой час",
+    "group": "Утро и день",
+    "prompt": "golden hour sunset warmth, glowing synths and guitars, mid-tempo, nostalgic and uplifting, soft vocals"
+  },
+  {
+    "id": "afternoon-haze",
+    "title": "Послеобеденная лень",
+    "group": "Утро и день",
+    "prompt": "sleepy afternoon, slow lo-fi hip hop beat, warm Rhodes keys, hazy relaxed mood"
+  },
+  {
+    "id": "morning-bossa",
+    "title": "Босса с утра",
+    "group": "Утро и день",
+    "prompt": "light bossa nova, nylon guitar, soft brushed percussion, sunny gentle female vocal"
+  },
+  {
+    "id": "shower-songs",
+    "title": "Песни в душе",
+    "group": "Утро и день",
+    "prompt": "big singalong pop anthems, bright energetic choruses, catchy hooks, fun uplifting vocals"
+  },
+  {
+    "id": "sunrise-epic",
+    "title": "Рассвет над городом",
+    "group": "Утро и день",
+    "prompt": "epic sunrise build, soaring synths and guitars, slow crescendo, emotional and hopeful"
+  },
+  {
+    "id": "morning-rap",
+    "title": "Бодрый читок",
+    "group": "Утро и день",
+    "prompt": "feel-good upbeat hip hop, bouncy drums, sunny sampled melodies, confident relaxed rapping"
+  },
+  {
+    "id": "weekend-morning",
+    "title": "Субботнее утро",
+    "group": "Утро и день",
+    "prompt": "carefree weekend morning, playful indie pop, handclaps, ukulele and bright guitars, cheerful vocals"
+  },
+  {
+    "id": "open-windows",
+    "title": "Окна нараспашку",
+    "group": "Утро и день",
+    "prompt": "fresh breezy music for opening the windows, light pop-rock, jangly guitars, cheerful mid-tempo"
+  },
+  {
+    "id": "tea-jam",
+    "title": "Чай с вареньем",
+    "group": "Утро и день",
+    "prompt": "gentle cosy folk, soft acoustic guitar, warm vocals, slow, homely and comforting"
+  },
+  {
+    "id": "new-day",
+    "title": "Новый день",
+    "group": "Утро и день",
+    "prompt": "optimistic fresh start, bright anthemic indie rock, building drums, hopeful singalong vocals"
+  },
+  {
+    "id": "foreign-morning",
+    "title": "Утро с заграничным привкусом",
+    "group": "Утро и день",
+    "prompt": "sunny English-language pop and indie, bright guitars, easy mid-tempo, warm friendly vocals",
+    "lang": "foreign"
+  },
+  {
+    "id": "dancefloor",
+    "title": "Танцпол",
+    "group": "Движ",
+    "prompt": "energetic dance party, four-on-the-floor beat, bright synths, high energy, euphoric"
+  },
+  {
+    "id": "house-party",
+    "title": "Домашняя вечеринка",
+    "group": "Движ",
+    "prompt": "fun house party bangers, danceable groove, big bass, catchy hooks, shouted choruses"
+  },
+  {
+    "id": "bass-chest",
+    "title": "Басы в грудь",
+    "group": "Движ",
+    "prompt": "heavy club bass, aggressive sub bass drops, fast hard-hitting trap drums, high energy"
+  },
+  {
+    "id": "techno-tunnel",
+    "title": "Техно-тоннель",
+    "group": "Движ",
+    "prompt": "driving dark techno, relentless kick drum, hypnotic repeating synths, 130 bpm, no vocals"
+  },
+  {
+    "id": "disco-ball",
+    "title": "Диско-шар",
+    "group": "Движ",
+    "prompt": "glittering disco, funky bass guitar, sweeping strings, four-on-the-floor, joyful and glamorous"
+  },
+  {
+    "id": "house-sunrise",
+    "title": "Хаус до рассвета",
+    "group": "Движ",
+    "prompt": "uplifting house music, warm piano chords, steady kick, soulful vocal samples, joyful"
+  },
+  {
+    "id": "pop-hits",
+    "title": "Хиты, хиты, хиты",
+    "group": "Движ",
+    "prompt": "catchy mainstream pop, polished production, big chorus, danceable mid-tempo"
+  },
+  {
+    "id": "rage",
+    "title": "Рейдж",
+    "group": "Движ",
+    "prompt": "rage beats, distorted bouncing synth leads, hard 808s, hyper energetic and chaotic"
+  },
+  {
+    "id": "plugg-bounce",
+    "title": "Плагг-подпрыгни",
+    "group": "Движ",
+    "prompt": "plugg bounce, sparkly bell melodies, soft 808 bass, bouncy hi-hats, playful"
+  },
+  {
+    "id": "dnb",
+    "title": "Дрэм-энд-бейс",
+    "group": "Движ",
+    "prompt": "fast drum and bass, 170 bpm, rolling breakbeats, deep bass, energetic"
+  },
+  {
+    "id": "latin-heat",
+    "title": "Горячие ритмы",
+    "group": "Движ",
+    "prompt": "latin dance, reggaeton dembow beat, percussion, sultry upbeat groove"
+  },
+  {
+    "id": "funk-kitchen",
+    "title": "Фанк-кухня",
+    "group": "Движ",
+    "prompt": "funky groove, slap bass, tight drums, brass stabs, playful dance feel"
+  },
+  {
+    "id": "glitter-pop",
+    "title": "Блёстки",
+    "group": "Движ",
+    "prompt": "glossy electropop, sparkling synths, punchy beat, euphoric sweet vocals"
+  },
+  {
+    "id": "afterparty",
+    "title": "Афтерпати",
+    "group": "Движ",
+    "prompt": "late afterparty deep hypnotic house, slow-building groove, warm bass, sleepy but still dancing"
+  },
+  {
+    "id": "karaoke",
+    "title": "Все в караоке",
+    "group": "Движ",
+    "prompt": "big singalong rock and pop anthems, loud choruses, crowd shouting, party spirit"
+  },
+  {
+    "id": "party-rap",
+    "title": "Тусовочный рэп",
+    "group": "Движ",
+    "prompt": "party hip hop, heavy bass, club-ready trap beat, shouted hooks, high energy"
+  },
+  {
+    "id": "ru-dance",
+    "title": "Танцы по-русски",
+    "group": "Движ",
+    "prompt": "Russian-language dance pop and rap, club beat, catchy Russian chorus, upbeat and fun",
+    "lang": "ru"
+  },
+  {
+    "id": "foreign-hits",
+    "title": "Заграничные хиты",
+    "group": "Движ",
+    "prompt": "English-language dance pop and hip hop hits, big hooks, polished club production, upbeat",
+    "lang": "foreign"
+  },
+  {
+    "id": "gym-hype",
+    "title": "Качалка",
+    "group": "Спорт",
+    "prompt": "aggressive gym workout hype, heavy drums, distorted bass, fast and hard-hitting, shouted vocals"
+  },
+  {
+    "id": "morning-run",
+    "title": "Утренняя пробежка",
+    "group": "Спорт",
+    "prompt": "steady 160 bpm running music, driving pop-rock or electronic beat, energetic and uplifting"
+  },
+  {
+    "id": "cardio",
+    "title": "Кардио",
+    "group": "Спорт",
+    "prompt": "fast four-on-the-floor electronic, pumping bass, sustained high energy, motivational"
+  },
+  {
+    "id": "heavy-lifting",
+    "title": "Тяжёлый вес",
+    "group": "Спорт",
+    "prompt": "heavy metal, down-tuned crushing guitars, double bass drums, aggressive growled vocals"
+  },
+  {
+    "id": "trap-gym",
+    "title": "Трэп в зал",
+    "group": "Спорт",
+    "prompt": "dark hard trap, booming 808s, aggressive rapped vocals, intense gym energy"
+  },
+  {
+    "id": "cooldown",
+    "title": "Заминка",
+    "group": "Спорт",
+    "prompt": "gentle cooldown after workout, slow ambient electronic, soft pads, steady calm breathing tempo"
+  },
+  {
+    "id": "yoga",
+    "title": "Растяжка и йога",
+    "group": "Спорт",
+    "prompt": "yoga flow, gentle ambient and soft world instruments, slow tempo, calm, no vocals"
+  },
+  {
+    "id": "cycling",
+    "title": "Велик и ветер",
+    "group": "Спорт",
+    "prompt": "bright upbeat indie pop and rock, driving mid-tempo beat, wind in hair feeling, feel-good"
+  },
+  {
+    "id": "shadow-boxing",
+    "title": "Бой с тенью",
+    "group": "Спорт",
+    "prompt": "gritty boxing training, hard boom bap and aggressive drums, tense, determined rapping"
+  },
+  {
+    "id": "champion",
+    "title": "Золото",
+    "group": "Спорт",
+    "prompt": "triumphant anthemic music, epic drums, brass and big synth, victorious and powerful"
+  },
+  {
+    "id": "punk-sprint",
+    "title": "Панк-спринт",
+    "group": "Спорт",
+    "prompt": "fast punk rock, distorted guitars, shouted vocals, breakneck tempo, raw energy"
+  },
+  {
+    "id": "swim",
+    "title": "Заплыв",
+    "group": "Спорт",
+    "prompt": "smooth flowing electronic, steady hypnotic pulse, watery synths, rhythmic and calm focus"
+  },
+  {
+    "id": "stadium",
+    "title": "Стадион",
+    "group": "Спорт",
+    "prompt": "stadium anthems, stomping drums, big chanting chorus, powerful rock, crowd energy"
+  },
+  {
+    "id": "intervals",
+    "title": "Интервалы",
+    "group": "Спорт",
+    "prompt": "intense interval training, breakbeat and hard electronic, sudden drops and builds, relentless"
+  },
+  {
+    "id": "walking-pace",
+    "title": "Прогулочным шагом",
+    "group": "Спорт",
+    "prompt": "easy walking pace, mid-tempo friendly indie pop, light guitars, steady relaxed beat"
+  },
+  {
+    "id": "breakup",
+    "title": "После расставания",
+    "group": "Грусть",
+    "prompt": "sad breakup, slow tempo, heartbroken vocals, piano and soft guitar, melancholic"
+  },
+  {
+    "id": "cry-it-out",
+    "title": "Выплакаться",
+    "group": "Грусть",
+    "prompt": "very emotional ballad, slow, tearful vocals, piano and strings, cathartic"
+  },
+  {
+    "id": "melancholy",
+    "title": "Меланхолия",
+    "group": "Грусть",
+    "prompt": "calm melancholic, slow tempo, minor key, soft guitar and pads, wistful vocals"
+  },
+  {
+    "id": "sad-rap",
+    "title": "Грустный читок",
+    "group": "Грусть",
+    "prompt": "sad emotional rap, melancholic piano loop, slow trap drums, pained introspective rapping"
+  },
+  {
+    "id": "emo-night",
+    "title": "Эмо-вечер",
+    "group": "Грусть",
+    "prompt": "emo and pop-punk, emotional shouted-sung vocals, distorted guitars, driving drums, bittersweet"
+  },
+  {
+    "id": "lonely",
+    "title": "Одиночество",
+    "group": "Грусть",
+    "prompt": "lonely and empty, sparse lo-fi, muted guitar, quiet vocals, long reverb, heavy mood"
+  },
+  {
+    "id": "nostalgia",
+    "title": "Ностальгия",
+    "group": "Грусть",
+    "prompt": "bittersweet nostalgia, warm hazy synths and tape-saturated guitars, mid-slow tempo, wistful"
+  },
+  {
+    "id": "missing-you",
+    "title": "Скучаю",
+    "group": "Грусть",
+    "prompt": "yearning, missing someone, soft acoustic ballad, gentle vocals, slow, tender ache"
+  },
+  {
+    "id": "gloomy-rock",
+    "title": "Хмурый рок",
+    "group": "Грусть",
+    "prompt": "gloomy post-punk, driving bass, cold reverb guitars, dark baritone vocals"
+  },
+  {
+    "id": "slowcore",
+    "title": "Медленно-медленно",
+    "group": "Грусть",
+    "prompt": "slowcore, very slow drums, sparse guitar, fragile whispery vocals, heavy quiet sadness"
+  },
+  {
+    "id": "rainy-blues",
+    "title": "Блюз под дождём",
+    "group": "Грусть",
+    "prompt": "slow blues, expressive electric guitar, warm bass, weary soulful vocals"
+  },
+  {
+    "id": "bright-sadness",
+    "title": "Светлая грусть",
+    "group": "Грусть",
+    "prompt": "gentle consoling sadness, soft piano and strings, slow, healing and bittersweet"
+  },
+  {
+    "id": "headphone-sad",
+    "title": "Грусть в наушниках",
+    "group": "Грусть",
+    "prompt": "bedroom indie sad songs, quiet guitar, intimate vocals, lo-fi production"
+  },
+  {
+    "id": "dark-pop",
+    "title": "Тёмный поп",
+    "group": "Грусть",
+    "prompt": "dark moody pop, minimal beat, deep bass, breathy vocals, brooding"
+  },
+  {
+    "id": "sad-dance",
+    "title": "Плакать и танцевать",
+    "group": "Грусть",
+    "prompt": "sad but danceable, melancholic synth pop, driving beat, bittersweet vocals"
+  },
+  {
+    "id": "broken-trap",
+    "title": "Разбитое сердце",
+    "group": "Грусть",
+    "prompt": "sad melodic trap, emotional autotuned vocals, soft 808, guitar loop, heartbroken"
+  },
+  {
+    "id": "ru-sad",
+    "title": "Грустно по-русски",
+    "group": "Грусть",
+    "prompt": "sad Russian-language song, melancholic guitar, heartfelt Russian vocals, slow tempo",
+    "lang": "ru"
+  },
+  {
+    "id": "soft-love",
+    "title": "Нежно",
+    "group": "Любовь",
+    "prompt": "soft acoustic love song, gentle guitar, warm intimate vocals, slow and tender"
+  },
+  {
+    "id": "first-date",
+    "title": "Первое свидание",
+    "group": "Любовь",
+    "prompt": "sweet playful indie pop, light guitars, cute bouncy rhythm, nervous excitement, shy vocals"
+  },
+  {
+    "id": "slow-dance",
+    "title": "Медляк",
+    "group": "Любовь",
+    "prompt": "slow dance romantic ballad, soft drums, warm bass, lush strings, passionate vocals"
+  },
+  {
+    "id": "rnb-night",
+    "title": "Ночной R&B",
+    "group": "Любовь",
+    "prompt": "smooth sensual R&B, slow groove, warm bass, silky vocals, intimate"
+  },
+  {
+    "id": "crush",
+    "title": "Влюбился",
+    "group": "Любовь",
+    "prompt": "giddy crush, bright sparkling pop, fluttery synths, upbeat sweet vocals"
+  },
+  {
+    "id": "wedding",
+    "title": "Свадебный танец",
+    "group": "Любовь",
+    "prompt": "romantic and joyful, warm acoustic and piano, mid-tempo, emotional singalong vocals"
+  },
+  {
+    "id": "love-rap",
+    "title": "Любовный читок",
+    "group": "Любовь",
+    "prompt": "romantic hip hop, smooth beat, soft melodic rap and singing, warm vibe"
+  },
+  {
+    "id": "cuddle",
+    "title": "В обнимку",
+    "group": "Любовь",
+    "prompt": "cosy cuddling music, warm acoustic, soft vocals, slow heartbeat tempo, comforting"
+  },
+  {
+    "id": "long-distance",
+    "title": "На расстоянии",
+    "group": "Любовь",
+    "prompt": "longing love from afar, dreamy indie, gentle pulse, airy vocals, hopeful and aching"
+  },
+  {
+    "id": "candle-dinner",
+    "title": "Ужин при свечах",
+    "group": "Любовь",
+    "prompt": "romantic dinner jazz and soft soul, piano, upright bass, brushed drums, smooth"
+  },
+  {
+    "id": "flirt",
+    "title": "Флирт",
+    "group": "Любовь",
+    "prompt": "flirty playful pop, funky bassline, snappy beat, teasing confident vocals"
+  },
+  {
+    "id": "sweet-lofi",
+    "title": "Влюблённый лоу-фай",
+    "group": "Любовь",
+    "prompt": "sweet lo-fi love, warm jazzy chords, soft drums, dreamy vibe"
+  },
+  {
+    "id": "serenade",
+    "title": "Серенада под окном",
+    "group": "Любовь",
+    "prompt": "acoustic serenade, nylon and steel-string guitar, heartfelt close vocals, slow"
+  },
+  {
+    "id": "passion",
+    "title": "Страсть",
+    "group": "Любовь",
+    "prompt": "passionate intense love, dramatic strings, driving rhythm, powerful emotional vocals"
+  },
+  {
+    "id": "forever",
+    "title": "Навсегда",
+    "group": "Любовь",
+    "prompt": "grand romantic ballad, soaring vocals, piano and strings, emotional and devoted"
+  },
+  {
+    "id": "ru-love",
+    "title": "Любовь по-русски",
+    "group": "Любовь",
+    "prompt": "romantic Russian-language ballad, warm guitar, tender Russian vocals, slow to mid-tempo",
+    "lang": "ru"
+  },
+  {
+    "id": "foreign-love",
+    "title": "Love, love, love",
+    "group": "Любовь",
+    "prompt": "English-language love songs, warm soulful vocals, soft groove, romantic",
+    "lang": "foreign"
+  },
+  {
+    "id": "summer-road",
+    "title": "Лето, трасса, окна",
+    "group": "Дорога",
+    "prompt": "happy summer road trip, bright guitars, driving mid-tempo beat, windows-down singalong"
+  },
+  {
+    "id": "night-drive",
+    "title": "Ночная трасса",
+    "group": "Дорога",
+    "prompt": "night drive, steady pulsing synthwave, deep bass, highway lights, cool and hypnotic"
+  },
+  {
+    "id": "train-window",
+    "title": "Окно поезда",
+    "group": "Дорога",
+    "prompt": "train window daydreaming, gentle rhythmic pulse, ambient guitars, calm moving landscape"
+  },
+  {
+    "id": "highway-rock",
+    "title": "Шоссе",
+    "group": "Дорога",
+    "prompt": "classic road rock, driving guitar riffs, steady drums, raspy anthemic vocals"
+  },
+  {
+    "id": "city-walk",
+    "title": "По городу с наушниками",
+    "group": "Дорога",
+    "prompt": "city walk with headphones, mid-tempo indie rap and pop, relaxed urban beat"
+  },
+  {
+    "id": "sleepy-bus",
+    "title": "В автобусе",
+    "group": "Дорога",
+    "prompt": "sleepy bus ride, soft lo-fi, mellow guitar, drifting dreamy mood"
+  },
+  {
+    "id": "clouds",
+    "title": "В облаках",
+    "group": "Дорога",
+    "prompt": "airplane above the clouds, floating ambient, airy pads, slow soaring melodies, no drums"
+  },
+  {
+    "id": "adventure",
+    "title": "Приключение",
+    "group": "Дорога",
+    "prompt": "adventurous cinematic indie folk, stomping drums, acoustic guitars, group vocals, uplifting"
+  },
+  {
+    "id": "rainy-drive",
+    "title": "Дождь на лобовом",
+    "group": "Дорога",
+    "prompt": "rainy car ride, moody mid-tempo, soft synths and guitar, melancholic relaxed vocals"
+  },
+  {
+    "id": "seaside-trip",
+    "title": "К морю",
+    "group": "Дорога",
+    "prompt": "trip to the sea, breezy surf pop, bright guitars, light drums, sunny carefree vocals"
+  },
+  {
+    "id": "long-ride",
+    "title": "Далеко-далеко",
+    "group": "Дорога",
+    "prompt": "long steady drive, endless mid-tempo electronic rock, motorik beat, hypnotic guitars"
+  },
+  {
+    "id": "trunk-bass",
+    "title": "Тачка и бит",
+    "group": "Дорога",
+    "prompt": "car trunk bass hip hop, heavy 808s, catchy hooks, confident swagger"
+  },
+  {
+    "id": "mountains",
+    "title": "В горы",
+    "group": "Дорога",
+    "prompt": "mountain trip, epic folk-rock, acoustic guitar, big open choruses, breathtaking space"
+  },
+  {
+    "id": "late-taxi",
+    "title": "Ночное такси",
+    "group": "Дорога",
+    "prompt": "late taxi ride, slow moody R&B and trap, ambient city lights, reflective vocals"
+  },
+  {
+    "id": "hitchhike",
+    "title": "Автостопом",
+    "group": "Дорога",
+    "prompt": "carefree hitchhiking, upbeat country-tinged indie folk, handclaps, acoustic guitar, easygoing vocals"
+  },
+  {
+    "id": "foreign-road",
+    "title": "Заграничная трасса",
+    "group": "Дорога",
+    "prompt": "English-language road trip rock and indie, driving guitars, big singalong choruses, open road",
+    "lang": "foreign"
+  },
+  {
+    "id": "deep-focus",
+    "title": "Глубокий фокус",
+    "group": "Фокус и быт",
+    "prompt": "deep focus instrumental, steady minimal electronic, soft pulse, no vocals, unobtrusive"
+  },
+  {
+    "id": "study-lofi",
+    "title": "Учёба и лоу-фай",
+    "group": "Фокус и быт",
+    "prompt": "lo-fi hip hop study beats, mellow keys, dusty drums, no vocals, calm"
+  },
+  {
+    "id": "coding",
+    "title": "Кодим",
+    "group": "Фокус и быт",
+    "prompt": "coding flow, repetitive ambient techno, subtle bass, no vocals, hypnotic and clean"
+  },
+  {
+    "id": "reading",
+    "title": "Читаем",
+    "group": "Фокус и быт",
+    "prompt": "quiet reading music, solo piano, gentle and spacious, slow, no vocals"
+  },
+  {
+    "id": "rain-writing",
+    "title": "Пишем под дождь",
+    "group": "Фокус и быт",
+    "prompt": "calm ambient with rain-like textures, soft pads, slow, no vocals, cosy focus"
+  },
+  {
+    "id": "classical-focus",
+    "title": "Классика для ума",
+    "group": "Фокус и быт",
+    "prompt": "gentle classical chamber music, strings and piano, easy tempo, elegant, no vocals"
+  },
+  {
+    "id": "postrock-focus",
+    "title": "Построк для работы",
+    "group": "Фокус и быт",
+    "prompt": "instrumental post-rock, slowly building clean guitars, steady drums, no vocals, immersive"
+  },
+  {
+    "id": "jazz-desk",
+    "title": "Джаз за столом",
+    "group": "Фокус и быт",
+    "prompt": "instrumental cool jazz, soft piano trio, brushed drums, relaxed, no vocals"
+  },
+  {
+    "id": "minimal-clicks",
+    "title": "Минимал",
+    "group": "Фокус и быт",
+    "prompt": "minimal electronic, soft clicks, subtle bass, spacious and repetitive, no vocals"
+  },
+  {
+    "id": "cleaning",
+    "title": "Генеральная уборка",
+    "group": "Фокус и быт",
+    "prompt": "upbeat energetic pop and funk for cleaning the house, bouncy and cheerful, singalong"
+  },
+  {
+    "id": "cooking",
+    "title": "На кухне",
+    "group": "Фокус и быт",
+    "prompt": "cooking in the kitchen, soulful groovy mid-tempo, warm bass, friendly vocals"
+  },
+  {
+    "id": "creative-flow",
+    "title": "Творческий поток",
+    "group": "Фокус и быт",
+    "prompt": "dreamy creative flow, evolving synth textures, soft beat, spacious, inspiring"
+  },
+  {
+    "id": "night-shift",
+    "title": "Ночная смена",
+    "group": "Фокус и быт",
+    "prompt": "late night working, dark minimal electronic, quiet bass pulse, no vocals, concentrated"
+  },
+  {
+    "id": "background-quiet",
+    "title": "Тихо-тихо",
+    "group": "Фокус и быт",
+    "prompt": "very quiet background music, soft acoustic guitar, simple, unobtrusive"
+  },
+  {
+    "id": "exam-calm",
+    "title": "Перед экзаменом",
+    "group": "Фокус и быт",
+    "prompt": "calming reassuring ambient piano and pads, slow breathing tempo, steady, no vocals"
+  },
+  {
+    "id": "dream-haze",
+    "title": "Дымка",
+    "group": "Мечта",
+    "prompt": "dreamy shoegaze haze, washed-out guitars, soft drums, buried vocals, floating"
+  },
+  {
+    "id": "space-drift",
+    "title": "Дрейф в космосе",
+    "group": "Мечта",
+    "prompt": "space drift, vast ambient synth pads, slow arpeggios, weightless, no drums"
+  },
+  {
+    "id": "cloud-rap",
+    "title": "Облачный рэп",
+    "group": "Мечта",
+    "prompt": "dreamy cloud rap, airy synths, soft 808, floaty melodic vocals, hazy"
+  },
+  {
+    "id": "fairy-tale",
+    "title": "Сказка",
+    "group": "Мечта",
+    "prompt": "magical fairytale, harp and music box, gentle strings, whimsical and wondrous"
+  },
+  {
+    "id": "daydream",
+    "title": "Мечтательно",
+    "group": "Мечта",
+    "prompt": "daydreaming indie pop, glittery guitars, light beat, airy vocals, hopeful"
+  },
+  {
+    "id": "cinematic",
+    "title": "Как в кино",
+    "group": "Мечта",
+    "prompt": "cinematic score, rising strings and piano, epic emotional swell, dramatic"
+  },
+  {
+    "id": "ethereal",
+    "title": "Эфир",
+    "group": "Мечта",
+    "prompt": "ethereal angelic female vocals, reverb, ambient pads, slow, spiritual"
+  },
+  {
+    "id": "synth-dream",
+    "title": "Синти-сон",
+    "group": "Мечта",
+    "prompt": "dream pop synth, warm pads, gentle drum machine, hazy romantic vocals"
+  },
+  {
+    "id": "slow-motion",
+    "title": "Замедленная съёмка",
+    "group": "Мечта",
+    "prompt": "slow motion, heavy reverb, slow dreamy beat, cinematic ambient pop"
+  },
+  {
+    "id": "underwater",
+    "title": "Под водой",
+    "group": "Мечта",
+    "prompt": "underwater ambient, muffled soft tones, slow wavering synths, deep calm, no vocals"
+  },
+  {
+    "id": "fantasy",
+    "title": "Фэнтези",
+    "group": "Мечта",
+    "prompt": "fantasy adventure orchestral, flutes and strings, epic heroic atmosphere"
+  },
+  {
+    "id": "psychedelia",
+    "title": "Психоделика",
+    "group": "Мечта",
+    "prompt": "psychedelic rock, swirling phaser guitars, trippy synths, floating vocals"
+  },
+  {
+    "id": "vaporwave",
+    "title": "Вейпорвейв",
+    "group": "Мечта",
+    "prompt": "vaporwave, slowed-down nostalgic 80s samples, hazy synths, chopped and dreamy"
+  },
+  {
+    "id": "bright-future",
+    "title": "Светлое будущее",
+    "group": "Мечта",
+    "prompt": "hopeful bright electronic, uplifting synth melodies, gentle beat, optimistic"
+  },
+  {
+    "id": "awe",
+    "title": "Мурашки",
+    "group": "Мечта",
+    "prompt": "awe and wonder, soaring post-rock crescendo, shimmering guitars, swelling drums"
+  },
+  {
+    "id": "fury",
+    "title": "Ярость",
+    "group": "Злость",
+    "prompt": "furious aggressive music, distorted guitars and screaming vocals, fast brutal drums"
+  },
+  {
+    "id": "metal-wall",
+    "title": "Стена металла",
+    "group": "Злость",
+    "prompt": "heavy metal wall of sound, crushing riffs, double kick drums, growled vocals"
+  },
+  {
+    "id": "punk-attitude",
+    "title": "Панк-настрой",
+    "group": "Злость",
+    "prompt": "raw punk rock, fast distorted chords, shouted gang vocals, rebellious"
+  },
+  {
+    "id": "angry-trap",
+    "title": "Злой трэп",
+    "group": "Злость",
+    "prompt": "angry dark trap and drill, distorted 808s, aggressive barking rap, menacing synths"
+  },
+  {
+    "id": "hard-rap",
+    "title": "Жёсткая читка",
+    "group": "Злость",
+    "prompt": "hard-hitting aggressive hip hop, loud drums, intense shouted rap, gritty"
+  },
+  {
+    "id": "industrial",
+    "title": "Индастриал",
+    "group": "Злость",
+    "prompt": "industrial, harsh noisy synths, pounding mechanical drums, distorted aggression"
+  },
+  {
+    "id": "grunge",
+    "title": "Гранж",
+    "group": "Злость",
+    "prompt": "grunge, fuzzy heavy guitars, angsty gritty vocals, sludgy drums"
+  },
+  {
+    "id": "hard-electro",
+    "title": "Жёсткая электроника",
+    "group": "Злость",
+    "prompt": "hard electronic, aggressive distorted kicks, harsh bass, fast and breakneck, no vocals"
+  },
+  {
+    "id": "irritated",
+    "title": "Бесит всё",
+    "group": "Злость",
+    "prompt": "frustrated and irritated, snarling alternative rock, driving riffs, sarcastic shouting"
+  },
+  {
+    "id": "revenge",
+    "title": "Месть холодным блюдом",
+    "group": "Злость",
+    "prompt": "cold revenge, dark menacing trap, sinister piano, slow aggressive delivery"
+  },
+  {
+    "id": "mosh-pit",
+    "title": "Мош-пит",
+    "group": "Злость",
+    "prompt": "mosh pit hardcore, breakdowns, heavy chugging guitars, shouted vocals"
+  },
+  {
+    "id": "rap-rock",
+    "title": "Рэп-рок",
+    "group": "Злость",
+    "prompt": "rap rock, heavy riffs with aggressive rapping, nu metal groove"
+  },
+  {
+    "id": "noise",
+    "title": "Шум и гам",
+    "group": "Злость",
+    "prompt": "noisy experimental, feedback, harsh distortion, chaotic drums, abrasive"
+  },
+  {
+    "id": "cold-anger",
+    "title": "Холодная злость",
+    "group": "Злость",
+    "prompt": "cold simmering anger, dark minimal beat, bass heavy, menacing low vocals"
+  },
+  {
+    "id": "thrash",
+    "title": "Трэш",
+    "group": "Злость",
+    "prompt": "thrash metal, very fast palm-muted riffs, pounding drums, aggressive vocals"
+  },
+  {
+    "id": "ru-punk",
+    "title": "Русский панк",
+    "group": "Злость",
+    "prompt": "Russian punk and punk rap, shouted Russian vocals, distorted guitars, fast and rebellious",
+    "lang": "ru"
+  },
+  {
+    "id": "spring",
+    "title": "Весна",
+    "group": "Сезоны и погода",
+    "prompt": "spring awakening, light bright indie pop, fresh acoustic guitar, bouncy and hopeful"
+  },
+  {
+    "id": "summer",
+    "title": "Лето",
+    "group": "Сезоны и погода",
+    "prompt": "hot summer, sunny feel-good pop, bright guitars, tropical groove, carefree"
+  },
+  {
+    "id": "autumn",
+    "title": "Осень",
+    "group": "Сезоны и погода",
+    "prompt": "cosy autumn, warm mellow folk and indie, acoustic guitar and soft drums, wistful"
+  },
+  {
+    "id": "winter",
+    "title": "Зима",
+    "group": "Сезоны и погода",
+    "prompt": "quiet snowy winter, soft piano, sparkling bells, slow and peaceful"
+  },
+  {
+    "id": "rain",
+    "title": "Дождь за окном",
+    "group": "Сезоны и погода",
+    "prompt": "rain on the window, gentle moody lo-fi, soft piano and guitar, slow, calm melancholy"
+  },
+  {
+    "id": "thunderstorm",
+    "title": "Гроза",
+    "group": "Сезоны и погода",
+    "prompt": "thunderstorm, dramatic dark heavy music, deep rumbling bass, intense building atmosphere"
+  },
+  {
+    "id": "fog",
+    "title": "Туман",
+    "group": "Сезоны и погода",
+    "prompt": "foggy morning, ambient guitars, slow muffled drums, quiet mystery, hazy"
+  },
+  {
+    "id": "heatwave",
+    "title": "Жара",
+    "group": "Сезоны и погода",
+    "prompt": "heatwave, lazy slow groove, hazy summery electronic and R&B, sweaty and sultry"
+  },
+  {
+    "id": "first-snow",
+    "title": "Первый снег",
+    "group": "Сезоны и погода",
+    "prompt": "first snow, tender delicate piano and strings, soft and wondrous"
+  },
+  {
+    "id": "holidays",
+    "title": "Зимние праздники",
+    "group": "Сезоны и погода",
+    "prompt": "cosy festive winter holidays, sleigh bells, warm pop, cheerful and nostalgic"
+  },
+  {
+    "id": "sunny-day",
+    "title": "Солнечно!",
+    "group": "Сезоны и погода",
+    "prompt": "bright sunny day, cheerful upbeat pop and funk, handclaps, feel-good"
+  },
+  {
+    "id": "cold-wind",
+    "title": "Холодный ветер",
+    "group": "Сезоны и погода",
+    "prompt": "cold wind, stark minimal post-punk, clean icy guitars, cool detached vocals"
+  },
+  {
+    "id": "late-summer",
+    "title": "Конец лета",
+    "group": "Сезоны и погода",
+    "prompt": "end of summer, bittersweet warm indie, mellow guitars, nostalgic golden mood"
+  },
+  {
+    "id": "spring-rain",
+    "title": "Весенний дождик",
+    "group": "Сезоны и погода",
+    "prompt": "light spring rain, gentle hopeful acoustic, soft bright piano, fresh and calm"
+  },
+  {
+    "id": "tropics",
+    "title": "Тропики",
+    "group": "Сезоны и погода",
+    "prompt": "tropical vibes, steel drums, light percussion, breezy reggae-pop, beach"
+  },
+  {
+    "id": "blizzard",
+    "title": "Метель",
+    "group": "Сезоны и погода",
+    "prompt": "blizzard, swirling cold synths, powerful slow-building drama, icy and epic"
+  },
+  {
+    "id": "cafe",
+    "title": "Кафе на углу",
+    "group": "Сцены и места",
+    "prompt": "coffee shop background, jazzy lo-fi, acoustic guitar, relaxed mid-tempo, warm"
+  },
+  {
+    "id": "beach",
+    "title": "Пляж",
+    "group": "Сцены и места",
+    "prompt": "beach day, laid-back surf rock and tropical pop, sunny and relaxed"
+  },
+  {
+    "id": "forest",
+    "title": "Лесная тропа",
+    "group": "Сцены и места",
+    "prompt": "forest walk, soft acoustic folk, airy flutes, slow and peaceful"
+  },
+  {
+    "id": "big-city",
+    "title": "Большой город",
+    "group": "Сцены и места",
+    "prompt": "big city rush, urban hip hop and electronic, confident beat, busy energy"
+  },
+  {
+    "id": "cozy-home",
+    "title": "Домашний уют",
+    "group": "Сцены и места",
+    "prompt": "cosy at home on the sofa, warm acoustic pop and soft soul, mellow and comforting"
+  },
+  {
+    "id": "library",
+    "title": "Библиотека",
+    "group": "Сцены и места",
+    "prompt": "quiet library, soft piano and ambient, hushed, calm and spacious"
+  },
+  {
+    "id": "rooftop-party",
+    "title": "Тусовка на крыше",
+    "group": "Сцены и места",
+    "prompt": "rooftop party at sunset, deep house and funky pop, warm bass, relaxed dancing"
+  },
+  {
+    "id": "festival",
+    "title": "Фестиваль",
+    "group": "Сцены и места",
+    "prompt": "summer festival main stage, big energetic indie and electronic, crowd singalongs, euphoric"
+  },
+  {
+    "id": "dive-bar",
+    "title": "Бар на районе",
+    "group": "Сцены и места",
+    "prompt": "dive bar rock and blues, loose guitars, rowdy mid-tempo, gritty and fun"
+  },
+  {
+    "id": "skatepark",
+    "title": "Скейт-парк",
+    "group": "Сцены и места",
+    "prompt": "skate park, fast fun pop-punk and hip hop, energetic skate-video vibe"
+  },
+  {
+    "id": "countryside",
+    "title": "Деревня",
+    "group": "Сцены и места",
+    "prompt": "countryside, warm folk and acoustic, slow and gentle, peaceful and earthy"
+  },
+  {
+    "id": "old-town",
+    "title": "Старый город",
+    "group": "Сцены и места",
+    "prompt": "old European town, accordion and piano, nostalgic waltz feel, warm and romantic"
+  },
+  {
+    "id": "spaceship",
+    "title": "Космический корабль",
+    "group": "Сцены и места",
+    "prompt": "sci-fi spaceship, cold futuristic synths, slow pulsing bass, spacey and mysterious"
+  },
+  {
+    "id": "arcade",
+    "title": "Аркада",
+    "group": "Сцены и места",
+    "prompt": "arcade and video game, chiptune synths, bright bouncy melodies, fast and playful"
+  },
+  {
+    "id": "garage-band",
+    "title": "Репетиция в гараже",
+    "group": "Сцены и места",
+    "prompt": "garage band rehearsal, raw guitars, live drums, loud and fun"
+  },
+  {
+    "id": "basement-rave",
+    "title": "Подвальный рейв",
+    "group": "Сцены и места",
+    "prompt": "underground basement rave, raw bass-heavy techno and breaks, sweaty dark energy"
+  },
+  {
+    "id": "nineties",
+    "title": "Девяностые",
+    "group": "Эпохи и миры",
+    "prompt": "90s alternative rock, fuzzy guitars, rough vocals, mid-tempo drums, nostalgic"
+  },
+  {
+    "id": "eighties",
+    "title": "Восьмидесятые",
+    "group": "Эпохи и миры",
+    "prompt": "80s synth pop, gated drums, bright analog synthesizers, nostalgic and glossy"
+  },
+  {
+    "id": "seventies",
+    "title": "Семидесятые",
+    "group": "Эпохи и миры",
+    "prompt": "70s funk and soul, warm bass, wah guitar, live horns"
+  },
+  {
+    "id": "noughties",
+    "title": "Нулевые",
+    "group": "Эпохи и миры",
+    "prompt": "2000s pop and R&B, glossy production, catchy hooks, early digital beats"
+  },
+  {
+    "id": "boom-bap",
+    "title": "Бум-бэп",
+    "group": "Эпохи и миры",
+    "prompt": "golden age boom bap hip hop, dusty drum breaks, jazzy samples, classic rapping"
+  },
+  {
+    "id": "bedroom-pop",
+    "title": "Поп из спальни",
+    "group": "Эпохи и миры",
+    "prompt": "bedroom pop, lo-fi guitars and synths, soft intimate vocals, DIY charm"
+  },
+  {
+    "id": "indie-sleaze",
+    "title": "Инди-вечеринка",
+    "group": "Эпохи и миры",
+    "prompt": "indie sleaze, scrappy dance-punk guitars, danceable rhythm, cool and messy"
+  },
+  {
+    "id": "new-wave",
+    "title": "Новая волна",
+    "group": "Эпохи и миры",
+    "prompt": "new wave and post-punk, jangly guitars, tight bass, cool detached vocals"
+  },
+  {
+    "id": "soundcloud",
+    "title": "Эра SoundCloud",
+    "group": "Эпохи и миры",
+    "prompt": "SoundCloud era lo-fi rap, distorted bass, rough vocals, DIY energy"
+  },
+  {
+    "id": "hyperpop",
+    "title": "Гиперпоп",
+    "group": "Эпохи и миры",
+    "prompt": "hyperpop, glitchy distorted synths, pitched-up vocals, maximalist and chaotic"
+  },
+  {
+    "id": "tape-lofi",
+    "title": "Кассетный лоу-фай",
+    "group": "Эпохи и миры",
+    "prompt": "tape lo-fi, hissy cassette recordings, warm saturation, jangly nostalgic guitars"
+  },
+  {
+    "id": "indie-folk",
+    "title": "Инди-фолк",
+    "group": "Эпохи и миры",
+    "prompt": "indie folk, banjo and acoustic guitars, stomping beat, harmonised vocals"
+  },
+  {
+    "id": "classic-metal",
+    "title": "Классический металл",
+    "group": "Эпохи и миры",
+    "prompt": "classic heavy metal, melodic guitar solos, high wailing vocals, galloping drums"
+  },
+  {
+    "id": "britpop",
+    "title": "Британия",
+    "group": "Эпохи и миры",
+    "prompt": "britpop and indie anthems, jangling guitars, singalong chorus, mid-tempo",
+    "lang": "foreign"
+  },
+  {
+    "id": "tokyo",
+    "title": "Токио",
+    "group": "Эпохи и миры",
+    "prompt": "Japanese pop and rock, bright guitars, upbeat catchy melodies, Japanese vocals",
+    "lang": "foreign"
+  },
+  {
+    "id": "ru-rock",
+    "title": "Русский рок",
+    "group": "Эпохи и миры",
+    "prompt": "classic Russian rock, expressive Russian vocals, guitars, poetic and heartfelt",
+    "lang": "ru"
+  },
+  {
+    "id": "ru-rap",
+    "title": "Русский рэп",
+    "group": "Эпохи и миры",
+    "prompt": "Russian rap, rapping in Russian over a hard beat, rhythmic Russian flow",
+    "lang": "ru"
+  }
+]

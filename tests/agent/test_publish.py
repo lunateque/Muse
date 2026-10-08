@@ -2,12 +2,13 @@ import logging
 import sqlite3
 from collections.abc import Sequence
 from contextlib import closing
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from muse_agent.publish import publish
-from muse_agent.settings import AgentConfig
+from muse_agent.settings import AgentConfig, Embed
 from tests.agent.support import (
     FakeRclone,
     agent_config,
@@ -108,3 +109,52 @@ def test_allowing_deletes_lifts_the_delete_cap(cfg: AgentConfig) -> None:
     publish(cfg, allow_deletes=True, run=rclone)
 
     assert option(rclone.calls[0], "--max-delete") == "-1"
+
+
+EMBED = ("uv", "run", "embed_catalog.py")
+
+
+def with_embed(cfg: AgentConfig) -> AgentConfig:
+    return replace(cfg, embed=Embed(command=EMBED))
+
+
+def test_the_embed_command_runs_before_the_library_sync(cfg: AgentConfig) -> None:
+    calls: list[Sequence[str]] = []
+
+    def record(argv: Sequence[str]) -> int:
+        calls.append(argv)
+        return 0
+
+    assert publish(with_embed(cfg), run=record) is True
+
+    assert calls[0] == EMBED
+    assert [call[1] for call in calls[1:]] == ["sync", "copyto"]
+
+
+def test_a_failed_embed_command_is_logged_and_publishing_goes_on(
+    cfg: AgentConfig, caplog: pytest.LogCaptureFixture
+) -> None:
+    rclone = FakeRclone({"run": 3})
+
+    with caplog.at_level(logging.INFO):
+        assert publish(with_embed(cfg), run=rclone) is True
+
+    assert rclone.verbs == ["run", "sync", "copyto"]
+    assert "publish: embed command failed rc=3" in caplog.messages
+
+
+def test_an_embed_command_that_cannot_start_does_not_stop_publishing(
+    cfg: AgentConfig, caplog: pytest.LogCaptureFixture
+) -> None:
+    rclone = FakeRclone()
+
+    def run(argv: Sequence[str]) -> int:
+        if argv[0] == "uv":
+            raise FileNotFoundError("uv")
+        return rclone(argv)
+
+    with caplog.at_level(logging.INFO):
+        assert publish(with_embed(cfg), run=run) is True
+
+    assert rclone.verbs == ["sync", "copyto"]
+    assert "publish: embed command failed: uv" in caplog.messages

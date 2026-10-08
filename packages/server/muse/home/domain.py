@@ -4,6 +4,7 @@ from datetime import date
 from typing import NotRequired, Protocol, TypedDict
 
 from muse.catalog.domain import AlbumCard, Track
+from muse.discovery.domain import MoodShelf
 from muse.insights.domain import ArtistPlays
 
 HOME_TTL_S = 120
@@ -44,6 +45,7 @@ HomeView = TypedDict(
         "continue": list[ContinueCard],
         "recent": list[Track],
         "top_artists": list[ArtistPlays],
+        "moods": list[MoodShelf],
         "mixes": list[MixCard],
         "forgotten": list[AlbumCard],
         "both_like": list[Track],

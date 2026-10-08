@@ -1,0 +1,28 @@
+[Unit]
+Description=Muse text encoder for mood search
+After=network.target
+[Service]
+User=muse-text
+Group=muse-text
+Environment=HF_HOME=/opt/muse-text/hf HF_HUB_OFFLINE=1 TOKENIZERS_PARALLELISM=false
+ExecStart=/opt/muse-text/venv/bin/python /opt/muse-text/app.py
+Restart=always
+RestartSec=10
+MemoryMax=3G
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+IPAddressDeny=any
+IPAddressAllow=localhost
+[Install]
+WantedBy=multi-user.target

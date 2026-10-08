@@ -114,7 +114,8 @@ async def test_a_mix_is_one_draw_per_user_and_day_from_its_genre(
 
     assert first == again
     assert (first["genre"], first["title"]) == (genre, f"Микс · {genre}")
-    assert len(first["tracks"]) == min(50, len(whole))
+    songs = {(item["artist"].casefold(), item["title"].casefold()) for item in whole}
+    assert len(first["tracks"]) == min(200, len(songs))
     assert {item["id"] for item in first["tracks"]} <= {item["id"] for item in whole}
     assert (await bob.get(f"/api/mix/{genre}")).json() != first
     clock.ms += DAY_MS

@@ -1,7 +1,7 @@
 import json
 import shutil
 import sqlite3
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import closing
 from pathlib import Path
 from typing import Any
@@ -20,6 +20,7 @@ from muse.settings import HttpSettings, PathsSettings, PushSettings, Settings
 from muse.shared.db import user_engine
 from muse.userdb import upgrade_database
 from tests.fixtures.catalog import FixtureCatalog, build_catalog
+from tests.fixtures.vectors import drop_vectors
 from tests.server.support import ORIGIN, PASSWORDS, browser, signed_in
 
 
@@ -121,6 +122,21 @@ def settings(
         http=HttpSettings(public_host="music.example.org", origins=(ORIGIN,)),
         push=PushSettings(enabled=False),
     )
+
+
+def with_catalog_copy(
+    settings: Settings, source: Path, target: Path, edit: Callable[[sqlite3.Connection], None]
+) -> Settings:
+    shutil.copyfile(source, target)
+    with closing(sqlite3.connect(target)) as db, db:
+        edit(db)
+    paths = settings.paths.model_copy(update={"catalog_db": target})
+    return settings.model_copy(update={"paths": paths})
+
+
+@pytest.fixture
+def legacy_settings(settings: Settings, library: FixtureCatalog, tmp_path: Path) -> Settings:
+    return with_catalog_copy(settings, library.catalog_db, tmp_path / "legacy.sqlite", drop_vectors)
 
 
 @pytest.fixture

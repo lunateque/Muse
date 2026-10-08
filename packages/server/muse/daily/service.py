@@ -21,9 +21,10 @@ from muse.daily.domain import (
     daily_prompt,
     reply_playlists,
     shown_order,
+    topped_up,
 )
-from muse.discovery.domain import DAY_MS, RadioModel
-from muse.discovery.service import RadioModels
+from muse.discovery.domain import DAY_MS, RadioModel, TopUp
+from muse.discovery.service import RadioModels, VectorIndexes
 from muse.identity.domain import Users
 from muse.shared.clock import Clock
 from muse.shared.db import UnitOfWork
@@ -84,6 +85,7 @@ class DailyMaker:
     def __init__(
         self,
         models: RadioModels,
+        indexes: VectorIndexes,
         store: DailyStore,
         taste: TasteSource,
         users: Users,
@@ -91,6 +93,7 @@ class DailyMaker:
         uow: UnitOfWork,
     ) -> None:
         self.models = models
+        self.indexes = indexes
         self.store = store
         self.taste = taste
         self.users = users
@@ -107,8 +110,9 @@ class DailyMaker:
         past = await self.store.past_titles(day.isoformat(), PAST_TITLES)
         prompt = daily_prompt(day, pool, model, self.users.all, listening, past)
         pool_ids = {track["id"] for track in pool}
+        topup = topped_up(await self.indexes.topup(), model, day)
         async for name, reply in ask(prompt):
-            drafts = self._usable(name, reply, pool_ids, model, day)
+            drafts = self._usable(name, reply, pool_ids, model, topup)
             if drafts is not None:
                 await self._save(day, drafts, name)
                 return True
@@ -122,14 +126,14 @@ class DailyMaker:
         return Listening(likes, plays, await self.taste.heard())
 
     def _usable(
-        self, name: str, reply: str, pool_ids: set[int], model: RadioModel, day: date
+        self, name: str, reply: str, pool_ids: set[int], model: RadioModel, topup: TopUp
     ) -> list[DailyDraft] | None:
         try:
             raw = reply_playlists(reply)
         except (ValueError, AttributeError) as error:
             log.warning(f"daily: {name}: no JSON ({error})")
             return None
-        drafts = daily_build(raw, pool_ids, model, self.users.all, day)
+        drafts = daily_build(raw, pool_ids, model, self.users.all, topup)
         if len(drafts) < DAILY_MIN_PLAYLISTS:
             log.warning(f"daily: {name}: only {len(drafts)} usable playlists")
             return None

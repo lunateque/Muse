@@ -12,6 +12,7 @@ from muse.discovery.domain import (
     draw_mix,
     draw_radio,
     excluded_ids,
+    song_key,
     spaced,
 )
 
@@ -81,6 +82,27 @@ def test_radio_favours_my_likes_then_my_partners_likes() -> None:
     assert drawn["mine"] / 5 > drawn["partner"] / 5 > drawn["other"] / 189
 
 
+def test_a_song_on_several_albums_is_drawn_once_by_the_old_radio_and_by_genre_mixes() -> None:
+    tracks = [track(index, f"Artist {index % 40}") for index in range(1, 400)]
+    for twin, original in ((200, 1), (201, 1), (202, 2)):
+        tracks[twin]["artist"], tracks[twin]["title"] = (
+            tracks[original]["artist"],
+            tracks[original]["title"] + " (Remastered)",
+        )
+    model = build_radio_model(tracks, [])
+    seed = model.by_id[1]
+
+    radio = draw_radio(model, seed, {1}, NOBODY, 50, random.Random(1))
+    mix = draw_mix(tracks, set(), set(), random.Random(1))
+
+    for listing in (radio, mix):
+        keys = [song_key(item["artist"], item["title"]) for item in listing]
+        assert len(keys) == len(set(keys))
+    assert song_key(seed["artist"], seed["title"]) not in {
+        song_key(item["artist"], item["title"]) for item in radio
+    }
+
+
 def test_spacing_avoids_the_same_artist_twice_in_a_row_while_it_can() -> None:
     picked = [track(1, "A"), track(2, "A"), track(3, "B"), track(4, "C"), track(5, "A")]
 
@@ -96,8 +118,8 @@ def test_excluded_ids_take_the_first_300_numeric_items() -> None:
 
 
 def test_a_mix_favours_liked_then_played_tracks() -> None:
-    tracks = [track(index, f"Artist {index}") for index in range(150)]
-    liked, played = set(range(50)), set(range(50, 100))
+    tracks = [track(index, f"Artist {index}") for index in range(300)]
+    liked, played = set(range(100)), set(range(100, 200))
     shown: Counter[str] = Counter()
     for offset in range(30):
         day = date(2026, 1, 1) + timedelta(days=offset)

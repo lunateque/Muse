@@ -27,6 +27,38 @@ can be overridden with a `MUSE_<SECTION>__<KEY>` environment variable. Start fro
 The agent reads `MUSE_AGENT_CONFIG` or `%APPDATA%/muse/agent.toml`. Start from
 `deploy/agent.example.toml`.
 
+Sound vectors and the mood list live in the catalog (`track_vectors`, `vector_space`, `moods`) and
+are made on the GPU PC by `scripts/embed_catalog.py` (own PEP 723 environment, not part of the uv
+workspace): `uv run scripts/embed_catalog.py --catalog <state.sqlite> --library <lib>` embeds the
+tracks that have no vector yet, refits the mean and the vocal-language axis and embeds the moods of
+`scripts/moods.json` whose prompt changed; `--import DIR` fills the vectors from the `emb_gemma.npy`
+and `ids.json` files in DIR. An optional `[embed] command` in `agent.toml` runs it before every publish.
+
+## Mood engine
+
+Songs are matched by how they sound, not by who listens to them. Every track has a 768-number
+vector in the catalog, the moods of `scripts/moods.json` have text vectors in the same space (see
+above for the tool that makes them), and the server loads both into memory whenever the catalog
+changes (`numpy`). From that come:
+
+- `/api/moods` and `/api/mood/{id}`: about two hundred mood mixes of 200 songs. A mix is drawn
+  from the songs nearest to the mood, at most three per artist, neither Russian nor foreign vocals
+  above 75 % (a minority side joins only with close matches), one song once however many albums
+  carry it, ordered so that neighbours sound alike. The draw is seeded by the mood and the day, so
+  both listeners get the same mix and a new one tomorrow; likes and plays play no part.
+- `/api/mood-search?q=`: the same draw for a phrase. The phrase is turned into a vector by
+  `muse-text`, a small separate service (`deploy/muse-text`, EmbeddingGemma 2 text tower on the
+  CPU, `127.0.0.1:8911`, `[moods] text_url` in `muse.toml`). While it is down the search answers
+  503 and nothing else changes.
+- `/api/radio/{id}?mood=`: radio takes the songs nearest to the seed and to the last songs of the
+  queue, skips what was played in the last hours or skipped early in the last month, and leans
+  to a mood when one is given. Likes only break ties.
+- Genre mixes (200 songs) and the daily playlists (up to 100 songs: the model's picks, then songs
+  that sound like them) use the same vectors for what is added.
+
+A catalog without the vector tables still works: the mood endpoints are empty (404 for one mood,
+503 for the search) and radio and daily playlists keep the older artist-link behaviour.
+
 ## Users and library
 
 Copy `deploy/users.example.json` to `users.json` in the data directory, put in your names and

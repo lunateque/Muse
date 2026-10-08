@@ -19,6 +19,7 @@ dependencies = [
     "anyio>=4.15",
     "bcrypt>=5",
     "mutagen",
+    "numpy>=2.3",
     "pillow",
     "pywebpush",
     "py-vapid",

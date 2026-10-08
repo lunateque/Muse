@@ -1,7 +1,7 @@
 import os
 import tomllib
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import MISSING, dataclass, fields, is_dataclass
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -60,6 +60,11 @@ class Deploy:
 
 
 @dataclass(frozen=True)
+class Embed:
+    command: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class AgentConfig:
     paths: Paths
     rclone: Rclone
@@ -67,6 +72,7 @@ class AgentConfig:
     daily: Daily
     schedule: Schedule
     deploy: Deploy
+    embed: Embed = Embed(command=())
 
 
 def default_path() -> Path:
@@ -94,9 +100,12 @@ def build(kind: type[Any], table: Mapping[str, object], prefix: str) -> Any:
         if key not in expected:
             raise ConfigError(f"{prefix}{key}: unknown key")
     values: dict[str, object] = {}
+    optional = {field.name for field in fields(kind) if field.default is not MISSING}
     for key, value_type in expected.items():
         where = f"{prefix}{key}"
         if key not in table:
+            if key in optional:
+                continue
             raise ConfigError(f"{where}: missing")
         value = table[key]
         if isinstance(value_type, type) and is_dataclass(value_type):

@@ -3,7 +3,8 @@ from collections.abc import Awaitable, Callable, Mapping
 from muse.catalog.domain import Track
 from muse.catalog.service import Catalog
 from muse.daily.service import DailyPlaylists
-from muse.discovery.service import Mixes
+from muse.discovery.domain import MoodShelf
+from muse.discovery.service import Mixes, Moods
 from muse.home.domain import (
     CONTINUE_LIMIT,
     FORGOTTEN_WINDOW_MS,
@@ -136,13 +137,39 @@ class ContinueCards:
         }
 
 
+class Shelves:
+    def __init__(self, queries: HomeQueries, catalog: Catalog, mixes: Mixes, moods: Moods) -> None:
+        self.queries = queries
+        self.catalog = catalog
+        self.mixes = mixes
+        self.moods = moods
+
+    async def genre_row(self, user_id: str, genres: Mapping[str, int], now: int) -> list[MixCard]:
+        ranked = await self.queries.genre_ranking(user_id, now - MIX_WINDOW_MS)
+        cards: list[MixCard] = []
+        for genre in mix_genres(ranked, list(genres)):
+            mix = await self.mixes.mix(user_id, genre)
+            cards.append(
+                {
+                    "genre": genre,
+                    "title": mix["title"],
+                    "tracks": len(mix["tracks"]),
+                    "albums": await self.catalog.cover_ids(mix["tracks"]),
+                }
+            )
+        return cards
+
+    async def mood_shelves(self) -> list[MoodShelf]:
+        return await self.moods.shelves()
+
+
 class HomeFeed:
     def __init__(
         self,
         queries: HomeQueries,
         catalog: Catalog,
         cards: ContinueCards,
-        mixes: Mixes,
+        shelves: Shelves,
         stats: ListeningStats,
         cache: Cache,
         users: Users,
@@ -151,7 +178,7 @@ class HomeFeed:
         self.queries = queries
         self.catalog = catalog
         self.cards = cards
-        self.mixes = mixes
+        self.shelves = shelves
         self.stats = stats
         self.cache = cache
         self.users = users
@@ -170,7 +197,8 @@ class HomeFeed:
             "continue": await self._continue(user_id, genres),
             "recent": await self._recent(user_id, RECENT_LIMIT),
             "top_artists": await self.stats.top_artists(user_id, now - TOP_ARTISTS_WINDOW_MS),
-            "mixes": await self._mixes(user_id, genres, now),
+            "moods": await self.shelves.mood_shelves(),
+            "mixes": await self.shelves.genre_row(user_id, genres, now),
             "forgotten": forgotten_albums(
                 await self.catalog.albums(), heard, user_id, self.clock.today()
             ),
@@ -193,21 +221,6 @@ class HomeFeed:
             if len(out) == CONTINUE_LIMIT:
                 break
         return out
-
-    async def _mixes(self, user_id: str, genres: Mapping[str, int], now: int) -> list[MixCard]:
-        ranked = await self.queries.genre_ranking(user_id, now - MIX_WINDOW_MS)
-        cards: list[MixCard] = []
-        for genre in mix_genres(ranked, list(genres)):
-            mix = await self.mixes.mix(user_id, genre)
-            cards.append(
-                {
-                    "genre": genre,
-                    "title": mix["title"],
-                    "tracks": len(mix["tracks"]),
-                    "albums": await self.catalog.cover_ids(mix["tracks"]),
-                }
-            )
-        return cards
 
 
 class HomeRefresh:

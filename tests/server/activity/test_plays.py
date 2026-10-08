@@ -115,6 +115,8 @@ def test_the_threshold_is_30_seconds_or_half_a_short_track(
         "album:12",
         "playlist:Вечер у моря",
         "mix:RU Rap",
+        "mood:night-drive",
+        "mood:q:3f2a9c0d11",
         "genre:Indie",
         "daily:7",
         "search",
@@ -143,6 +145,8 @@ def test_known_sources(source: str) -> None:
         "homepage",
         "playlist:" + "x" * 201,
         "mix:" + "x" * 101,
+        "mood:",
+        "mood:" + "x" * 101,
     ],
 )
 def test_unknown_sources(source: str) -> None:

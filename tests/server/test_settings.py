@@ -36,6 +36,7 @@ def test_the_example_file_is_a_complete_configuration(monkeypatch: pytest.Monkey
     assert settings.push.enabled
     assert settings.clock.timezone == "UTC"
     assert settings.cache.redis_url == "redis://127.0.0.1:6379/0"
+    assert settings.moods.text_url == "http://127.0.0.1:8911"
 
 
 def test_state_files_live_in_the_data_directory(config: Path) -> None:
@@ -68,6 +69,15 @@ def test_environment_overrides_the_file(config: Path, monkeypatch: pytest.Monkey
 
     assert (settings.http.host, settings.http.port) == ("127.0.0.1", 4545)
     assert settings.clock.timezone == "Asia/Tokyo"
+
+
+def test_the_text_service_defaults_to_the_local_port_and_can_be_moved(config: Path) -> None:
+    config.write_text(BASE + NO_PUSH, encoding="utf-8")
+    assert load_settings().moods.text_url == "http://127.0.0.1:8911"
+
+    config.write_text(BASE + NO_PUSH + "\n[moods]\ntext_url = 'http://10.0.0.5:9000'\n")
+
+    assert load_settings().moods.text_url == "http://10.0.0.5:9000"
 
 
 def test_push_needs_a_subject_while_enabled(config: Path) -> None:

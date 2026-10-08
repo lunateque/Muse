@@ -9,7 +9,7 @@ COUNTED = "p.listened_ms >= MIN(30000, lib_t.dur*500)"
 PLAYS_LIB = "FROM plays p JOIN lib.tracks lib_t ON lib_t.id=p.track_id "
 PLAY_ARTIST = ARTIST.replace("t.artist", "lib_t.artist")
 SOURCE_RE = re.compile(
-    r"album:\d+|playlist:.{1,200}|mix:.{1,100}|genre:.{1,100}|daily:\d+|search|home|artist:.{1,200}|liked|other|ours|radio|together"
+    r"album:\d+|playlist:.{1,200}|mix:.{1,100}|mood:.{1,100}|genre:.{1,100}|daily:\d+|search|home|artist:.{1,200}|liked|other|ours|radio|together"
 )
 COUNTED_MS = 30000
 COUNTED_SHARE_MS = 500

@@ -15,8 +15,9 @@ from muse.daily.domain import (
     daily_topup,
     reply_playlists,
     shown_order,
+    topped_up,
 )
-from muse.discovery.domain import RadioModel, build_radio_model
+from muse.discovery.domain import RadioModel, TopUp, build_radio_model
 from muse.identity.domain import User
 
 DAY = date(2026, 1, 15)
@@ -78,8 +79,14 @@ def playlist(
     return {"for": owner, "title": title, "blurb": blurb, "tracks": tracks}
 
 
-def build(raw: object, model: RadioModel, pool_ids: set[int] | None = None) -> list[DailyDraft]:
-    return daily_build(raw, pool_ids or set(model.by_id), model, USERS, DAY)
+def build(
+    raw: object,
+    model: RadioModel,
+    pool_ids: set[int] | None = None,
+    sound: TopUp | None = None,
+) -> list[DailyDraft]:
+    topup = topped_up(sound, model, DAY)
+    return daily_build(raw, pool_ids or set(model.by_id), model, USERS, topup)
 
 
 def artist_of(model: RadioModel, track_id: int) -> str:
@@ -94,7 +101,7 @@ def test_a_playlist_keeps_pool_tracks_once_and_three_per_artist() -> None:
     (draft,) = build([playlist("Утро", picks)], model, pool_ids)
 
     assert draft.tracks[:15] == [10, 11, 12, 20, 30, *one_per_artist(4, 10)]
-    assert (draft.picked, len(draft.tracks), len(set(draft.tracks))) == (15, 25, 25)
+    assert (draft.picked, len(draft.tracks), len(set(draft.tracks))) == (15, 39, 39)
     extra = Counter(artist_of(model, track_id) for track_id in draft.tracks[15:])
     assert set(extra) <= {f"Artist {number}" for number in range(2, 14)}
     assert max(Counter(artist_of(model, track_id) for track_id in draft.tracks).values()) == 3
@@ -107,16 +114,19 @@ def test_short_playlists_are_dropped_full_ones_kept_long_ones_cut() -> None:
         playlist("Ровно", one_per_artist(1, 12)),
         playlist("Полный", one_per_artist(1, 25)),
         playlist("Длинный", one_per_artist(1, 40)),
+        playlist("Огромный", [artist * 10 + n for artist in range(1, 41) for n in range(3)]),
     ]
 
     drafts = build(raw, model)
 
     assert [(d.title, d.picked, len(d.tracks)) for d in drafts] == [
-        ("Ровно", 12, 25),
-        ("Полный", 25, 25),
-        ("Длинный", 30, 30),
+        ("Ровно", 12, 36),
+        ("Полный", 25, 75),
+        ("Длинный", 40, 100),
+        ("Огромный", 100, 100),
     ]
-    assert drafts[2].tracks == one_per_artist(1, 30)
+    assert drafts[2].tracks[:40] == one_per_artist(1, 40)
+    assert len(set(drafts[3].tracks)) == 100
 
 
 def test_titles_must_be_present_and_distinct_and_texts_are_squeezed() -> None:
@@ -179,6 +189,23 @@ def test_topup_brings_near_artists_without_repeats_or_a_fourth_track() -> None:
         "Artist 2": 3,
     }
     assert daily_topup([10, 11], 2, model, DAY) == extra[:2]
+
+
+def test_sound_fills_a_playlist_first_and_the_artist_links_fill_the_rest() -> None:
+    model = library(40, 4, playlists=[{"Artist 1", "Artist 2"}])
+    asked: list[tuple[list[int], int]] = []
+
+    def sound(ids: list[int], count: int) -> list[int]:
+        asked.append((list(ids), count))
+        return [track_id for track_id in one_per_artist(20, 20) if track_id not in ids][:30]
+
+    (draft,) = build([playlist("Звук", one_per_artist(1, 12))], model, sound=sound)
+
+    assert asked == [(one_per_artist(1, 12), 88)]
+    assert draft.tracks[:12] == one_per_artist(1, 12)
+    assert draft.tracks[12:32] == one_per_artist(20, 20)
+    assert (draft.picked, len(draft.tracks), len(set(draft.tracks))) == (12, 96, 96)
+    assert max(Counter(artist_of(model, track_id) for track_id in draft.tracks).values()) <= 3
 
 
 def test_the_pool_keeps_favourites_and_adds_unheard_tracks_around_them() -> None:

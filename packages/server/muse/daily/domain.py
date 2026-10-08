@@ -8,7 +8,7 @@ from datetime import date
 from typing import Protocol, TypedDict
 
 from muse.catalog.domain import LibraryTrack, Track
-from muse.discovery.domain import Links, RadioModel
+from muse.discovery.domain import Links, RadioModel, TopUp
 from muse.identity.domain import User
 
 type Ask = Callable[[str], AsyncIterator[tuple[str, str]]]
@@ -27,8 +27,8 @@ PROMPT_GENRES = 4
 PAST_TITLES = 30
 ARTIST_CAP = 3
 DAILY_KEEP = 12
-DAILY_FILL = 25
-DAILY_MAX = 30
+DAILY_FILL = 100
+DAILY_MAX = 100
 DAILY_MIN_PLAYLISTS = 3
 DAILY_MAX_PLAYLISTS = 8
 TITLE_CHARS = 60
@@ -234,7 +234,7 @@ def daily_prompt(
 Названия прошлых дней, не повторяй их: {"; ".join(past) or "их пока нет"}.
 
 Собери ровно 6 плейлистов: 2 для {first.name_gen or first.name} ("for": "{first.id}"), 2 для {second.name_gen or second.name} ("for": "{second.id}") и 2 на двоих ("for": "both").
-- В каждом 20–30 треков. Бери только id из списка ниже, без повторов внутри плейлиста.
+- В каждом 20–40 треков. Бери только id из списка ниже, без повторов внутри плейлиста.
 - У каждого своя идея: настроение, время дня, повод, открытия. Не «весь жанр подряд».
 - Смешивай любимое (♥, ▶) и новое примерно поровну. На двоих бери то, что подойдёт обоим.
 - Не больше 3 треков одного артиста в плейлисте. Расставь треки так, чтобы переходы были плавными.
@@ -276,6 +276,16 @@ def daily_topup(ids: list[int], count: int, model: RadioModel, day: date) -> lis
     return out
 
 
+def topped_up(sound: TopUp | None, model: RadioModel, day: date) -> TopUp:
+    def top_up(ids: list[int], count: int) -> list[int]:
+        out = sound(ids, count) if sound else []
+        if len(out) < count:
+            out += daily_topup([*ids, *out], count - len(out), model, day)
+        return out
+
+    return top_up
+
+
 def track_id_of(value: object) -> int | None:
     if isinstance(value, int):
         return value
@@ -303,7 +313,7 @@ def squeezed(value: object, limit: int) -> str:
 
 
 def daily_build(
-    raw: object, pool_ids: set[int], model: RadioModel, users: Sequence[User], day: date
+    raw: object, pool_ids: set[int], model: RadioModel, users: Sequence[User], topup: TopUp
 ) -> list[DailyDraft]:
     whose = {user.id: user.id for user in users} | {user.name.casefold(): user.id for user in users}
     out: list[DailyDraft] = []
@@ -319,7 +329,7 @@ def daily_build(
             continue
         ids, picked = ids[:DAILY_MAX], min(len(ids), DAILY_MAX)
         if len(ids) < DAILY_FILL:
-            ids += daily_topup(ids, DAILY_FILL - len(ids), model, day)
+            ids += topup(ids, DAILY_FILL - len(ids))
         titles.add(title.casefold())
         owner = whose.get(str(entry.get("for") or "").strip().casefold(), BOTH)
         out.append(DailyDraft(owner, title, squeezed(entry.get("blurb"), BLURB_CHARS), ids, picked))

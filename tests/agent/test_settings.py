@@ -27,11 +27,27 @@ def test_the_shipped_example_loads_with_typed_values() -> None:
     assert cfg.daily.command == ("llm-cli", "--model", "{model}", "--prompt-file", "{prompt_file}")
     assert cfg.daily.models == ("model-a",)
     assert cfg.deploy.web_dist == Path("D:/music/web/dist")
+    assert cfg.embed.command == ()
+
+
+def test_the_embed_hook_is_enabled_by_uncommenting_its_section(tmp_path: Path) -> None:
+    path = config_file(tmp_path, "# [embed]\n# command", "[embed]\ncommand")
+
+    command = settings.load(path).embed.command
+
+    assert command[:2] == ("uv", "run")
+    assert command[2].endswith("embed_catalog.py")
 
 
 @pytest.mark.parametrize(
     ("old", "new", "complaint"),
     [
+        ("# [embed]", "[embed]\n#", "embed.command: missing"),
+        (
+            "# [embed]",
+            "[embed]\ncommand = []\n#",
+            "embed.command: must be a non-empty list of strings",
+        ),
         ("hour = 5", "hour = 5\nhours = 6", "daily.hours: unknown key"),
         ("[deploy]", "[extra]\nkey = 1\n[deploy]", "extra: unknown key"),
         ('agent_host = "vps-agent"', "", "vps.agent_host: missing"),

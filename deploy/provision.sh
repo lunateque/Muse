@@ -49,6 +49,9 @@ fi
 if ! id -u muse >/dev/null 2>&1; then
   useradd --system --home-dir /srv/muse --no-create-home --shell /usr/sbin/nologin muse
 fi
+if ! id -u muse-text >/dev/null 2>&1; then
+  useradd --system --home-dir /opt/muse-text --no-create-home --shell /usr/sbin/nologin muse-text
+fi
 if ! id -u cloudflared >/dev/null 2>&1; then
   useradd --system --home-dir /nonexistent --no-create-home --shell /usr/sbin/nologin cloudflared
 fi
@@ -62,6 +65,8 @@ owned_dir() {
 owned_dir root root 755 /opt/muse
 owned_dir root root 755 /opt/muse/releases
 owned_dir root root 755 /opt/muse/python
+owned_dir root root 755 /opt/muse-text
+owned_dir muse-text muse-text 750 /opt/muse-text/hf
 owned_dir root root 755 /srv/muse
 owned_dir muse muse 750 /srv/muse/data
 if ! mountpoint -q /srv/muse/lib; then
@@ -79,10 +84,17 @@ if ! grep -qxF 'include /etc/redis/muse.conf' /etc/redis/redis.conf; then
 fi
 systemctl restart redis-server
 
+install -o root -g root -m 644 "$here/muse-text/app.py" /opt/muse-text/app.py
+if [ ! -x /opt/muse-text/venv/bin/python ]; then
+  UV_PYTHON_INSTALL_DIR=/opt/muse/python UV_CACHE_DIR=/var/cache/uv uv venv --python 3.14 /opt/muse-text/venv
+fi
+UV_CACHE_DIR=/var/cache/uv uv pip install --python /opt/muse-text/venv/bin/python -r "$here/muse-text/requirements.txt"
+chmod -R a+rX /opt/muse-text/venv /opt/muse/python
+
 install -o root -g root -m 755 "$here"/bin/* /usr/local/bin/
 install -o root -g root -m 644 "$here"/systemd/* /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable redis-server muse-lib.service muse-catalog.timer muse-backup.timer muse.service cloudflared-muse.service
+systemctl enable redis-server muse-lib.service muse-catalog.timer muse-backup.timer muse-text.service muse.service cloudflared-muse.service
 
 ufw default deny incoming
 ufw default allow outgoing

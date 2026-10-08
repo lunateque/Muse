@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 
 def publish(cfg: AgentConfig, allow_deletes: bool = False, run: Runner = run_logged) -> bool:
+    embed(cfg, run)
     snapshot = cfg.paths.work_dir / SNAPSHOT_NAME
     stats = make_snapshot(cfg.paths.catalog_db, cfg.paths.library_dir, snapshot)
     code = run(sync_command(cfg, allow_deletes))
@@ -33,6 +34,19 @@ def publish(cfg: AgentConfig, allow_deletes: bool = False, run: Runner = run_log
     record.write_text(f"{digest}\n", encoding="ascii")
     log.info("publish: catalog uploaded %s", summary)
     return True
+
+
+def embed(cfg: AgentConfig, run: Runner) -> None:
+    command = cfg.embed.command
+    if not command:
+        return
+    try:
+        code = run(command)
+    except OSError as error:
+        log.warning("publish: embed command failed: %s", error)
+        return
+    if code != 0:
+        log.warning("publish: embed command failed rc=%d", code)
 
 
 def sync_command(cfg: AgentConfig, allow_deletes: bool) -> list[str]:

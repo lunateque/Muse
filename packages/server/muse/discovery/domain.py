@@ -1,8 +1,10 @@
 import math
 import random
-from collections.abc import Iterable, Sequence
+import re
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from datetime import date
+from itertools import islice
 from typing import Protocol, TypedDict
 
 from muse.catalog.domain import LibraryTrack, Track, track_of
@@ -18,9 +20,26 @@ RADIO_EXCLUDE_LIMIT = 300
 SEED_ARTIST_CAP = 3
 ARTIST_CAP = 2
 UNGROUPED_GENRES = (None, "Other")
-MIX_SIZE = 50
+MIX_SIZE = 200
+RADIO_SKIP_MS = 30 * DAY_MS
+RADIO_SKIPPED_LISTEN_MS = 30000
+NO_MOOD = "no mood"
+SEARCH_DOWN = "mood search unavailable"
+SEARCH_MAX_CHARS = 120
+SEARCH_GROUP = "Поиск"
+SHELF_GROUPS = 3
+SHELF_MOODS = 8
 MIX_PLAYED_DAYS = 90
 MIX_TTL_S = 86400
+
+type TopUp = Callable[[list[int], int], list[int]]
+
+BRACKETS = re.compile(r"\([^)]*\)|\[[^\]]*\]")
+VERSION_TAIL = re.compile(
+    r"\s+[-\u2013\u2014]\s+[^-\u2013\u2014]*\b(live|remaster\w*|version|mix|edit|mono|stereo|acoustic|demo"
+    r"|radio|deluxe|bonus|\d{4})\b.*$"
+)
+FEATURING = re.compile(r"\s+(feat\.?|ft\.?|featuring)\s.*$")
 
 
 class Mix(TypedDict):
@@ -28,6 +47,51 @@ class Mix(TypedDict):
     title: str
     tracks: list[Track]
     albums: list[int]
+
+
+class MoodCard(TypedDict):
+    id: str
+    title: str
+    albums: list[int]
+
+
+class MoodShelf(TypedDict):
+    title: str
+    moods: list[MoodCard]
+
+
+class MoodGroups(TypedDict):
+    groups: list[MoodShelf]
+
+
+class MoodMix(TypedDict):
+    id: str
+    title: str
+    group: str
+    tracks: list[Track]
+    albums: list[int]
+
+
+class MoodRow(TypedDict):
+    id: str
+    title: str
+    grp: str
+    ord: int
+    prompt: str
+    lang: str | None
+    vec: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class RawVectors:
+    track_ids: list[int]
+    track_vecs: list[bytes]
+    space: dict[str, bytes]
+    moods: list[MoodRow]
+
+
+class TextUnavailableError(Exception):
+    pass
 
 
 class RadioView(TypedDict):
@@ -60,9 +124,28 @@ def build_radio_model(tracks: list[LibraryTrack], playlists: Iterable[set[str]])
     return RadioModel(tracks, {track["id"]: track for track in tracks}, links)
 
 
-def excluded_ids(exclude: str) -> set[int]:
+def song_key(artist: str, title: str) -> str:
+    name = BRACKETS.sub(" ", title.casefold())
+    name = FEATURING.sub("", " ".join(name.split()))
+    name = VERSION_TAIL.sub("", name)
+    return f"{artist.casefold().strip()}|{' '.join(name.split()).strip(' -')}"
+
+
+def unique_songs[T: Track](tracks: Iterable[T], seen: set[str]) -> Iterator[T]:
+    for track in tracks:
+        key = song_key(track["artist"], track["title"])
+        if key not in seen:
+            seen.add(key)
+            yield track
+
+
+def excluded_list(exclude: str) -> list[int]:
     items = exclude.split(",")[:RADIO_EXCLUDE_LIMIT]
-    return {int(item) for item in items if item.strip().isdigit()}
+    return [int(item) for item in items if item.strip().isdigit()]
+
+
+def excluded_ids(exclude: str) -> set[int]:
+    return set(excluded_list(exclude))
 
 
 def draw_radio(
@@ -86,8 +169,8 @@ def draw_radio(
         weight += 0.8 * (track["id"] in taste.mine) + 0.5 * (track["id"] in taste.partner) + 0.02
         keyed.append((rnd.random() ** (1 / weight), track))
     keyed.sort(key=lambda pair: -pair[0])
-    picked = capped([track for _, track in keyed], seed["artist"], count)
-    return spaced(picked, seed["artist"])
+    songs = unique_songs((track for _, track in keyed), {song_key(seed["artist"], seed["title"])})
+    return spaced(capped(songs, seed["artist"], count), seed["artist"])
 
 
 def capped(tracks: Iterable[LibraryTrack], seed_artist: str, count: int) -> list[LibraryTrack]:
@@ -129,7 +212,8 @@ def draw_mix(
         (rnd.random() ** (1 / mix_weight(track["id"], liked, played)), track) for track in tracks
     ]
     keyed.sort(key=lambda pair: -pair[0])
-    return [track for _, track in keyed[:MIX_SIZE]]
+    unique = unique_songs((track for _, track in keyed), set())
+    return list(islice(unique, MIX_SIZE))
 
 
 def mix_title(genre: str) -> str:
@@ -140,6 +224,21 @@ def mix_key(user_id: str, genre: str, day: date) -> str:
     return f"user:{user_id}:mix:{genre}:{day.isoformat()}"
 
 
+def mood_shelves[T](
+    groups: Sequence[tuple[str, Sequence[T]]], day: date
+) -> list[tuple[str, list[T]]]:
+    if not groups:
+        return []
+    number = day.toordinal()
+    first = number * SHELF_GROUPS % len(groups)
+    shelves: list[tuple[str, list[T]]] = []
+    for step in range(min(SHELF_GROUPS, len(groups))):
+        title, moods = groups[(first + step) % len(groups)]
+        turn = number % len(moods)
+        shelves.append((title, [*moods[turn:], *moods[:turn]][:SHELF_MOODS]))
+    return shelves
+
+
 class ListeningHistory(Protocol):
     async def played_since(self, user_id: str, since_ms: int) -> set[int]: ...
 
@@ -147,6 +246,16 @@ class ListeningHistory(Protocol):
 
     async def liked(self, user_id: str) -> set[int]: ...
 
+    async def skipped_since(self, user_id: str, since_ms: int) -> set[int]: ...
+
 
 class GenreTracks(Protocol):
     async def by_id(self, genre: str) -> list[Track]: ...
+
+
+class VectorSource(Protocol):
+    async def load(self) -> RawVectors: ...
+
+
+class TextEncoder(Protocol):
+    async def embed(self, text: str) -> list[float]: ...

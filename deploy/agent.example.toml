@@ -24,3 +24,7 @@ backup_keep_days = 30
 [deploy]
 admin_host = "vps"
 web_dist = "D:/music/web/dist"
+# optional: the GPU embed tool, run before every publish (see scripts/embed_catalog.py);
+# a failure is logged and publishing goes on without it
+# [embed]
+# command = ["uv", "run", "D:/music/muse/scripts/embed_catalog.py", "--catalog", "D:/music/state.sqlite", "--library", "D:/music/lib"]
