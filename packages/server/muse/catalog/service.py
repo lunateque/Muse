@@ -16,11 +16,7 @@ from muse.catalog.domain import (
     NO_SUCH_GENRE,
     NO_TRACK,
     NOT_PLAYABLE,
-    PAD_WARN_S,
-    REENCODE_WAIT_S,
     RUN_IDS,
-    RUN_IO_S,
-    RUN_READ,
     RUN_SONGS,
     SEARCH_MIN_CHARS,
     AlbumCard,
@@ -37,6 +33,7 @@ from muse.catalog.domain import (
     PlaylistCard,
     PlaylistPage,
     PlaylistSource,
+    RunCutError,
     RunRow,
     SearchResult,
     StoredTrack,
@@ -48,23 +45,12 @@ from muse.catalog.domain import (
     playlist_tracks,
     search_pattern,
 )
+from muse.catalog.songs import SongFrames
 from muse.shared.cache import Cache
 from muse.shared.errors import DomainError
-from muse.shared.mp3 import STREAM_KIND, FrameReader, Joiner
+from muse.shared.mp3 import STREAM_KIND, Joiner
 
 log = structlog.get_logger()
-
-
-class RunCutError(Exception):
-    def __init__(self, why: str) -> None:
-        super().__init__(why)
-        self.why = why
-
-
-async def bounded[*A, T](fn: Callable[[*A], T], *args: *A, limit: float = RUN_IO_S) -> T | None:
-    with anyio.move_on_after(limit):
-        return await anyio.to_thread.run_sync(fn, *args, abandon_on_cancel=True)
-    return None
 
 
 class Catalog:
@@ -83,6 +69,10 @@ class Catalog:
         self.storage = storage
         self.root = root
         self.cache = cache
+        self.songs = SongFrames(storage)
+
+    async def song_audio(self, row: RunRow, joiner: Joiner) -> bytes:
+        return await self.songs.joined(row, joiner)
 
     async def stream_file(self, track_id: int) -> Path:
         found = await self.queries.track_path(track_id)
@@ -96,27 +86,33 @@ class Catalog:
     async def track_file(self, stored: str | None) -> Path | None:
         return await anyio.to_thread.run_sync(self.storage.locate, stored)
 
+    async def playable(self, ids: Sequence[int]) -> list[RunRow]:
+        if not ids:
+            return []
+        by_id = {row["id"]: row for row in await self.queries.run_rows(ids)}
+        rows: list[RunRow] = []
+        for track_id in ids:
+            row = by_id.get(track_id)
+            if row is None or not row["dur"]:
+                break
+            rows.append(row)
+        if len(rows) < len(ids):
+            log.warning("run shortened", track=ids[len(rows)], why=NOT_PLAYABLE)
+        return rows
+
     async def run(self, ids: str, at: float) -> AsyncIterator[bytes]:
         if not RUN_IDS.fullmatch(ids) or not math.isfinite(at) or at < 0:
             raise DomainError(BAD_RUN)
         wanted = [int(item) for item in ids.split(",")]
         if len(wanted) > RUN_SONGS:
             raise DomainError(BAD_RUN)
-        by_id = {row["id"]: row for row in await self.queries.run_rows(wanted)}
-        rows: list[RunRow] = []
-        for track_id in wanted:
-            row = by_id.get(track_id)
-            if row is None or not row["dur"]:
-                break
-            rows.append(row)
+        rows = await self.playable(wanted)
         if not rows:
             raise DomainError(NO_TRACK)
         if at >= (rows[0]["dur"] or 0):
             raise DomainError(BAD_RUN)
         if await self.track_file(rows[0]["path"]) is None:
             raise DomainError(FILE_GONE)
-        if len(rows) < len(wanted):
-            log.warning("run shortened", track=wanted[len(rows)], why=NOT_PLAYABLE)
         return self._run_audio(rows, at)
 
     async def _run_audio(self, rows: list[RunRow], at: float) -> AsyncIterator[bytes]:
@@ -124,62 +120,11 @@ class Catalog:
         for index, row in enumerate(rows):
             joiner.song(float(row["dur"] or 0), at if index == 0 else 0.0)
             try:
-                async for body in self._song(row, joiner):
+                async for body in self.songs.bodies(row, joiner):
                     yield body
             except RunCutError as cut:
                 log.warning("run cut", track=row["id"], why=cut.why)
                 return
-
-    async def _song(self, row: RunRow, joiner: Joiner) -> AsyncIterator[bytes]:
-        if not joiner.left:
-            return
-        reader = FrameReader()
-        async for body in self._native(row, joiner, reader):
-            yield body
-        if reader.kind != STREAM_KIND:
-            encoded = await self._reencoded(row, joiner)
-            if encoded:
-                yield encoded
-        missing = joiner.left * STREAM_KIND.samples / STREAM_KIND.rate
-        if missing > PAD_WARN_S:
-            log.warning("run padded", track=row["id"], seconds=round(missing, 1))
-        if padding := joiner.finish():
-            yield padding
-
-    async def _native(
-        self, row: RunRow, joiner: Joiner, reader: FrameReader
-    ) -> AsyncIterator[bytes]:
-        source = await bounded(self.storage.open_audio, row["path"])
-        if source is None:
-            raise RunCutError(FILE_GONE)
-        try:
-            while joiner.left:
-                try:
-                    chunk = await bounded(source.read, RUN_READ)
-                except OSError:
-                    raise RunCutError("read failed") from None
-                if chunk is None:
-                    raise RunCutError("read timeout")
-                frames = reader.push(chunk)
-                if reader.kind is not None and reader.kind != STREAM_KIND:
-                    return
-                if body := joiner.take(frames):
-                    yield body
-                if not chunk or reader.done:
-                    return
-        finally:
-            with anyio.CancelScope(shield=True):
-                await bounded(source.close)
-
-    async def _reencoded(self, row: RunRow, joiner: Joiner) -> bytes:
-        data = await bounded(self.storage.reencoded, row["path"], limit=REENCODE_WAIT_S)
-        if data is None:
-            raise RunCutError(NOT_PLAYABLE)
-        reader = FrameReader()
-        frames = reader.push(data)
-        if reader.kind != STREAM_KIND:
-            raise RunCutError(NOT_PLAYABLE)
-        return joiner.take(frames)
 
     async def fingerprint(self) -> str:
         return await anyio.to_thread.run_sync(self.library.fingerprint)

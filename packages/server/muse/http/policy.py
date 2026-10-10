@@ -34,6 +34,10 @@ def api_cache_control(path: str, status: int) -> bytes:
         return b"private, max-age=604800"
     if status in (200, 206) and path.startswith("/api/stream/"):
         return b"private, max-age=86400"
+    if status == 200 and path.startswith("/api/hls/") and path.endswith(".m3u8"):
+        return b"no-cache"
+    if status == 200 and path.startswith("/api/hls/") and path.endswith(".mp3"):
+        return b"private, max-age=86400"
     return b"no-store"
 
 

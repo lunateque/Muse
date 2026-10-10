@@ -15,6 +15,7 @@ from muse.catalog.routes import router as catalog
 from muse.daily.routes import router as daily
 from muse.diagnostics.routes import router as diagnostics
 from muse.discovery.routes import router as discovery
+from muse.hls.routes import router as hls
 from muse.home.routes import router as home
 from muse.http.auth import SessionAuthMiddleware
 from muse.http.errors import EXCEPTION_HANDLERS
@@ -50,6 +51,7 @@ ROUTERS = (
     daily,
     home,
     diagnostics,
+    hls,
 )
 
 log = structlog.get_logger()

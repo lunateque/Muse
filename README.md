@@ -12,6 +12,19 @@ chunks; songs that are not MPEG-1 48 kHz stereo are re-encoded with ffmpeg, whic
 `deploy/provision.sh` installs. A stream ends early, before the first song it cannot play (no
 catalog length, file gone, failed re-encoding), and the client starts a new one from there.
 
+A user with `"hls": true` in `users.json` (a prototype, reported as `hls` by `/api/me`) plays
+the same queue over HLS instead: `PUT /api/hls/<id>` opens a session over a list of tracks and
+a start offset (the client picks the 22 to 64 character `[A-Za-z0-9_-]` id, so it can set the
+`src` before the answer arrives; repeating the PUT returns the same session, an id taken by the
+other listener is 404). Its playlist (`/api/hls/<id>.m3u8`) is an EVENT playlist of 9.984 s MP3
+segments, so the client sets one `src` for the whole listening session and iOS resumes by
+segment after a dropped connection; a playlist asked for before the PUT lands waits up to 5 s
+for it. `POST /api/hls/<id>/append` adds songs (up to 500 in a session; `end: true` closes it
+with an end marker). Segments are cut at frame boundaries from the same frames `/api/run`
+builds, each starting with an ID3 timestamp tag; the last 8 songs are kept in memory. The
+playlist and segment URLs are capabilities (no cookie needed); sessions untouched for two days
+are deleted, and `/api/hls/` requests go to the stream log.
+
 The repository holds two Python packages:
 
 - `packages/server` (`muse`): the Litestar server.

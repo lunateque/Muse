@@ -10,6 +10,8 @@ from muse.identity.domain import User
 
 STREAM_PATH = "/api/stream/"
 RUN_PATH = "/api/run"
+HLS_PATH = "/api/hls/"
+HLS_TRACK = "hls"
 MS = 1000
 
 log = structlog.get_logger()
@@ -31,7 +33,17 @@ def header(scope: Scope, name: bytes) -> str | None:
 def audio_track(path: str) -> str | None:
     if path.startswith(STREAM_PATH):
         return path.removeprefix(STREAM_PATH)
+    if path.startswith(HLS_PATH):
+        return HLS_TRACK
     return "run" if path == RUN_PATH else None
+
+
+def audio_query(scope: Scope, track: str) -> str | None:
+    query = scope["query_string"].decode("latin-1")
+    if track == HLS_TRACK:
+        tail = scope["path"].removeprefix(HLS_PATH)
+        return f"{tail}?{query}" if query else tail
+    return query or None
 
 
 class StreamLog:
@@ -71,7 +83,7 @@ class StreamLog:
                 device=device(header(scope, b"user-agent") or ""),
                 range=header(scope, b"range"),
                 if_range=header(scope, b"if-range") is not None,
-                query=scope["query_string"].decode("latin-1") or None,
+                query=audio_query(scope, track),
                 status=delivery.status,
                 bytes=delivery.sent,
                 first_ms=None if delivery.first is None else round(delivery.first * MS),

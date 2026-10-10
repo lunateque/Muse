@@ -68,11 +68,21 @@ API = {
     ("GET", "/api/daily"),
     ("GET", "/api/daily/{int}"),
     ("GET", "/api/home"),
+    ("PUT", "/api/hls/{str}"),
+    ("POST", "/api/hls/{str}/append"),
+    ("GET", "/api/hls/{str}"),
+    ("GET", "/api/hls/{str}/{int}/{str}"),
 }
 WEB = {
     (method, path) for method in ("GET", "HEAD") for path in ("/", "/{path}", "/api", "/api/{path}")
 }
-OPEN = {("POST", "/api/login"), ("POST", "/api/logout"), *WEB}
+OPEN = {
+    ("POST", "/api/login"),
+    ("POST", "/api/logout"),
+    ("GET", "/api/hls/{str}"),
+    ("GET", "/api/hls/{str}/{int}/{str}"),
+    *WEB,
+}
 
 
 def table(app: Litestar) -> set[tuple[str, str, bool]]:

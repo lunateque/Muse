@@ -41,6 +41,9 @@ from muse.discovery.service import (
     VectorIndexCache,
     VectorIndexes,
 )
+from muse.hls.domain import HlsStore
+from muse.hls.infra.sql import SqlHls
+from muse.hls.service import HlsSessions, SongCache
 from muse.home.domain import HomeQueries
 from muse.home.infra.sql import SqlHome
 from muse.home.service import ContinueCards, HomeFeed, HomeRefresh, Shelves
@@ -211,6 +214,10 @@ class ContextsProvider(Provider):
     home_shelves = provide(Shelves)
     home_feed = provide(HomeFeed)
     home_refresh = provide(HomeRefresh)
+
+    hls_store = provide(SqlHls, provides=HlsStore)
+    hls_songs = provide(SongCache, scope=Scope.APP)
+    hls_sessions = provide(HlsSessions)
 
     player_log_service = provide(PlayerLogService)
 

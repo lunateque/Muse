@@ -29,3 +29,6 @@
             CREATE TABLE IF NOT EXISTS daily(id INTEGER PRIMARY KEY AUTOINCREMENT, day TEXT NOT NULL, slot INT NOT NULL,
                 for_user TEXT NOT NULL, title TEXT NOT NULL, blurb TEXT NOT NULL, tracks TEXT NOT NULL,
                 model TEXT NOT NULL, created_at INT NOT NULL, UNIQUE(day, slot));
+            CREATE TABLE IF NOT EXISTS hls(id TEXT PRIMARY KEY, user TEXT NOT NULL, ids TEXT NOT NULL,
+                at REAL NOT NULL, ended INT NOT NULL DEFAULT 0, created_at INT NOT NULL,
+                updated_at INT NOT NULL);

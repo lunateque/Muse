@@ -66,6 +66,7 @@ containers = [
     "muse.daily",
     "muse.home",
     "muse.diagnostics",
+    "muse.hls",
 ]
 layers = ["(routes)", "(schemas)", "(service) | (infra)", "(domain)"]
 
@@ -95,6 +96,7 @@ forbidden_modules = [
     "muse.daily",
     "muse.home",
     "muse.diagnostics",
+    "muse.hls",
     "muse.http",
     "muse.wiring",
     "muse.app",
@@ -119,5 +121,6 @@ source_modules = [
     "muse.daily",
     "muse.home",
     "muse.diagnostics",
+    "muse.hls",
 ]
 forbidden_modules = ["muse.http", "muse.wiring", "muse.app", "muse.cli"]

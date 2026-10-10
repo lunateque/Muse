@@ -39,6 +39,7 @@ class PublicUser(TypedDict):
 
 class Me(PublicUser):
     cover_colors: bool
+    hls: bool
     partner: PublicUser
 
 
@@ -55,6 +56,7 @@ class User:
     name_dat: str | None = None
     author: bool = False
     cover_colors: bool = False
+    hls: bool = False
     password_hash: str | None = None
 
     @property
@@ -98,6 +100,7 @@ class Users:
         return {
             **user.public(),
             "cover_colors": user.cover_colors,
+            "hls": user.hls,
             "partner": self.partner(user).public(),
         }
 
@@ -125,6 +128,7 @@ def _user(entry: dict[str, Any]) -> User:
         name_dat=_optional_text(entry.get("name_dat")),
         author=bool(entry.get("author")),
         cover_colors=bool(entry.get("cover_colors")),
+        hls=bool(entry.get("hls")),
         password_hash=entry.get("password_hash") or None,
     )
 

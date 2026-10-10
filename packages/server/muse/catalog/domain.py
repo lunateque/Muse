@@ -37,6 +37,12 @@ DEVICE_PREFIX = re.compile(r"^.*?/Music/")
 DRIVE = re.compile(r"^[A-Za-z]:/")
 
 
+class RunCutError(Exception):
+    def __init__(self, why: str) -> None:
+        super().__init__(why)
+        self.why = why
+
+
 def album_name(name: str, credit: str, artist: str) -> str:
     return f"Синглы · {credit}" if name == SINGLES and credit != artist else name
 

@@ -12,7 +12,8 @@
       "nick": "Лисёнок",
       "author": true,
       "password_hash": null,
-      "cover_colors": true
+      "cover_colors": true,
+      "hls": true
     },
     {
       "id": "sam",

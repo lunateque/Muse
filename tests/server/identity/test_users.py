@@ -40,6 +40,7 @@ def test_each_user_knows_the_partner_and_how_the_client_sees_them(
         "dat": "Алиса",
         "author": False,
         "cover_colors": False,
+        "hls": False,
         "partner": {
             "id": "bob",
             "name": "Боб",
@@ -82,6 +83,21 @@ def test_a_missing_cover_colors_defaults_to_false(
     assert bob is not None
     assert (alice.cover_colors, bob.cover_colors) == (False, False)
     assert "cover_colors" not in users.me(alice)["partner"]
+
+
+def test_the_hls_flag_is_parsed_per_user_and_never_shown_for_the_partner(
+    users_document: dict[str, Any],
+) -> None:
+    document = copy.deepcopy(users_document)
+    document["users"][1]["hls"] = True
+    users = parse_users(document)
+
+    alice = users.get("alice")
+    bob = users.get("bob")
+    assert alice is not None
+    assert bob is not None
+    assert (users.me(alice)["hls"], users.me(bob)["hls"]) == (False, True)
+    assert "hls" not in users.me(bob)["partner"]
 
 
 @pytest.mark.parametrize(

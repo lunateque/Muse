@@ -107,3 +107,22 @@ async def test_me_reports_the_cover_colors_flag(
 
     assert me["cover_colors"] is cover_colors
     assert "cover_colors" not in me["partner"]
+
+
+@pytest.mark.parametrize("hls", [True, False])
+async def test_me_reports_the_hls_flag(
+    hls: bool, settings: Settings, users_document: dict[str, Any]
+) -> None:
+    document = copy.deepcopy(users_document)
+    if hls:
+        document["users"][0]["hls"] = True
+    (settings.paths.users_file).write_text(json.dumps(document), encoding="utf-8")
+
+    app = create_app(settings)
+    async with AsyncTestClient(app=app, base_url=ORIGIN):
+        alice = await signed_in(app, "alice")
+        me = (await alice.get("/api/me")).json()
+        await alice.aclose()
+
+    assert me["hls"] is hls
+    assert "hls" not in me["partner"]
