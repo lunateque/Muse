@@ -45,11 +45,11 @@ def test_a_song_shorter_than_a_frame_adds_no_frames() -> None:
     [
         (0, 0, 0),
         (1, 1, 1),
-        (415, 1, 415),
-        (416, 1, 416),
-        (417, 2, 1),
-        (832, 2, 416),
-        (1000, 3, 168),
+        (SEG_FRAMES - 1, 1, SEG_FRAMES - 1),
+        (SEG_FRAMES, 1, SEG_FRAMES),
+        (SEG_FRAMES + 1, 2, 1),
+        (2 * SEG_FRAMES, 2, SEG_FRAMES),
+        (2 * SEG_FRAMES + 168, 3, 168),
     ],
 )
 def test_a_song_is_cut_into_whole_segments_and_a_short_last_one(
@@ -69,14 +69,14 @@ def test_the_playlist_lists_every_segment_with_its_exact_length() -> None:
     assert lines[:6] == [
         "#EXTM3U",
         "#EXT-X-VERSION:3",
-        "#EXT-X-TARGETDURATION:10",
+        "#EXT-X-TARGETDURATION:30",
         "#EXT-X-MEDIA-SEQUENCE:0",
         "#EXT-X-PLAYLIST-TYPE:EVENT",
         "#EXT-X-START:TIME-OFFSET=0,PRECISE=YES",
     ]
     entries = playlist_entries(text)
     assert len(entries) == sum(segment_count(piece.frames) for piece in pieces)
-    assert entries[0] == ("9.984", "abc/0/0.mp3")
+    assert entries[0] == ("29.952", "abc/0/0.mp3")
     assert entries[-1][1] == f"abc/1/{segment_count(pieces[1].frames) - 1}.mp3"
     assert abs(sum(float(length) for length, _ in entries) - 126.0) < 0.024
     assert "#EXT-X-ENDLIST" not in text
@@ -95,7 +95,7 @@ def test_an_empty_session_has_a_playlist_without_segments() -> None:
 
 
 def test_segments_exist_only_inside_the_session() -> None:
-    pieces = [SongPiece(1000, 0), SongPiece(0, 0), SongPiece(416, 0)]
+    pieces = [SongPiece(3 * SEG_FRAMES, 0), SongPiece(0, 0), SongPiece(1, 0)]
 
     found = [(song, index) for song in range(-1, 4) for index in range(-1, 4)]
 
@@ -108,12 +108,12 @@ def test_segments_exist_only_inside_the_session() -> None:
 
 
 def test_segment_timestamps_run_on_the_session_timeline_across_songs() -> None:
-    pieces = [SongPiece(1000, 0), SongPiece(500, 0)]
+    pieces = [SongPiece(3 * SEG_FRAMES, 0), SongPiece(2 * SEG_FRAMES, 0)]
 
     assert segment_ticks(pieces, 0, 0) == 0
-    assert segment_ticks(pieces, 0, 2) == 832 * TICKS_PER_FRAME
-    assert segment_ticks(pieces, 1, 0) == 1000 * TICKS_PER_FRAME
-    assert segment_ticks(pieces, 1, 1) == 1416 * TICKS_PER_FRAME
+    assert segment_ticks(pieces, 0, 2) == 2 * SEG_FRAMES * TICKS_PER_FRAME
+    assert segment_ticks(pieces, 1, 0) == 3 * SEG_FRAMES * TICKS_PER_FRAME
+    assert segment_ticks(pieces, 1, 1) == 4 * SEG_FRAMES * TICKS_PER_FRAME
 
 
 @pytest.mark.parametrize(
@@ -155,20 +155,27 @@ def test_the_timestamp_is_cut_to_33_bits() -> None:
 
 
 def test_a_segment_is_the_tag_and_whole_frames_cut_on_frame_boundaries() -> None:
-    audio = SongAudio.of(mp3_bytes(1000))
+    total = 3 * SEG_FRAMES + 168
+    audio = SongAudio.of(mp3_bytes(total))
 
     bodies = [
-        segment_body(audio, index, index * SEG_FRAMES * TICKS_PER_FRAME) for index in range(3)
+        segment_body(audio, index, index * SEG_FRAMES * TICKS_PER_FRAME) for index in range(4)
     ]
 
     split = [split_tag(body) for body in bodies]
-    assert [len(frames) // FRAME_LENGTH for _, frames in split] == [416, 416, 168]
-    assert b"".join(frames for _, frames in split) == mp3_bytes(1000)
+    assert [len(frames) // FRAME_LENGTH for _, frames in split] == [
+        SEG_FRAMES,
+        SEG_FRAMES,
+        SEG_FRAMES,
+        168,
+    ]
+    assert b"".join(frames for _, frames in split) == mp3_bytes(total)
     stamps = [stamp(tag) for tag, _ in split]
     assert stamps == [
         0,
-        416 * TICKS_PER_FRAME,
-        832 * TICKS_PER_FRAME,
+        SEG_FRAMES * TICKS_PER_FRAME,
+        2 * SEG_FRAMES * TICKS_PER_FRAME,
+        3 * SEG_FRAMES * TICKS_PER_FRAME,
     ]
 
 

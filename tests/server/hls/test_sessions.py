@@ -88,7 +88,7 @@ async def test_a_session_is_created_and_its_playlist_lists_the_songs_minus_the_s
     per_song = [-(-first_frames // SEG_FRAMES), -(-second_frames // SEG_FRAMES)]
     assert [uri.split("/")[1] for _, uri in entries].count("0") == per_song[0]
     assert len(entries) == sum(per_song)
-    assert entries[0] == ("9.984", f"{sid}/0/0.mp3")
+    assert entries[0] == (f"{min(first_frames, SEG_FRAMES) / PER_SECOND:.3f}", f"{sid}/0/0.mp3")
 
 
 async def test_the_segments_of_a_session_join_into_exactly_the_run(
@@ -423,7 +423,8 @@ async def test_a_name_that_cannot_be_a_session_is_404_without_waiting(
 async def test_a_song_is_read_from_its_file_once_for_all_its_segments(
     alice: httpx.AsyncClient, library: FixtureCatalog, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    [(first, _, _)] = shortest(library, 1)
+    sql = "SELECT id FROM tracks WHERE status='ok' AND dur > 60 ORDER BY dur DESC, id LIMIT 1"
+    [first] = [row["id"] for row in fixture_rows(library, sql)]
     sid = session_id(22)
     await open_session(alice, sid, [first])
     opened: list[str | None] = []

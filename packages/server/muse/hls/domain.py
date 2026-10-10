@@ -4,8 +4,8 @@ from typing import Protocol, TypedDict
 
 from muse.shared.mp3 import frame_at
 
-SEG_FRAMES = 416
-TARGET_DURATION_S = 10
+SEG_FRAMES = 1248
+TARGET_DURATION_S = 30
 MAX_SONGS = 500
 MAX_APPEND = 200
 SESSION_TTL_MS = 2 * 24 * 3600 * 1000
