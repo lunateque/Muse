@@ -46,16 +46,17 @@ ALBUM_HEAD = (
 )
 SEARCH_ARTISTS = (
     f"SELECT {ARTIST} name, COUNT(DISTINCT t.album_id) albums, COUNT(*) tracks {PLAYABLE}"
-    f"AND {ARTIST} IN (SELECT {ARTIST} {PLAYABLE}AND (uc(t.artist) LIKE ? OR uc(ar.canonical) LIKE ?)) "
+    f"AND {ARTIST} IN (SELECT {ARTIST} {PLAYABLE}"
+    "AND (instr(sk(t.artist), ?) > 0 OR instr(sk(ar.canonical), ?) > 0)) "
     f"GROUP BY {ARTIST} ORDER BY tracks DESC LIMIT 20"
 )
 SEARCH_ALBUMS = (
     f"SELECT al.id, {ALBUM_NAME} name, al.year, al.genre, {ARTIST} artist {PLAYABLE}"
-    f"AND uc({ALBUM_NAME}) LIKE ? GROUP BY al.id LIMIT 20"
+    f"AND instr(sk({ALBUM_NAME}), ?) > 0 GROUP BY al.id LIMIT 20"
 )
 SEARCH_TRACKS = (
     f"SELECT t.id, t.title, {ALBUM_NAME} album, t.album_id, {ARTIST} artist, t.dur {PLAYABLE}"
-    "AND uc(t.title) LIKE ? LIMIT 20"
+    "AND instr(sk(t.title), ?) > 0 LIMIT 20"
 )
 TRACK = (
     f"SELECT t.id, t.title, {ALBUM_NAME} album, {ARTIST} artist, t.dur, t.num, t.album_id "
@@ -101,13 +102,13 @@ class SqlCatalog:
     async def album_head(self, album_id: int) -> AlbumHead | None:
         return cast("AlbumHead | None", await self.db.row(ALBUM_HEAD, (album_id,)))
 
-    async def search(self, pattern: str) -> SearchResult:
+    async def search(self, key: str) -> SearchResult:
         return cast(
             "SearchResult",
             {
-                "artists": await self.db.rows(SEARCH_ARTISTS, (pattern, pattern)),
-                "albums": await self.db.rows(SEARCH_ALBUMS, (pattern,)),
-                "tracks": await self.db.rows(SEARCH_TRACKS, (pattern,)),
+                "artists": await self.db.rows(SEARCH_ARTISTS, (key, key)),
+                "albums": await self.db.rows(SEARCH_ALBUMS, (key,)),
+                "tracks": await self.db.rows(SEARCH_TRACKS, (key,)),
             },
         )
 

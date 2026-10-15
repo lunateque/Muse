@@ -51,11 +51,12 @@ async def sessions(user_db: Path, catalog: Path) -> AsyncIterator[async_sessionm
     await engine.dispose()
 
 
-async def test_the_catalog_is_read_only_and_casefolds_with_uc(catalog: Path) -> None:
+async def test_the_catalog_is_read_only_and_searches_by_search_key(catalog: Path) -> None:
     db = CatalogDb(catalog_engine(catalog))
 
-    assert await db.value("SELECT uc('ÄB')") == "äb"
-    assert await db.rows("SELECT id FROM tracks WHERE uc(title) LIKE ?", ("%ёл%",)) == [{"id": 1}]
+    assert await db.value("SELECT sk('ÄB')") == "äb"
+    rows = await db.rows("SELECT id FROM tracks WHERE instr(sk(title), ?) > 0", ("елк",))
+    assert rows == [{"id": 1}]
     with pytest.raises(OperationalError, match="readonly"):
         await db.value("INSERT INTO tracks VALUES (2, 'x')")
 
@@ -77,7 +78,7 @@ async def test_the_user_database_reads_the_library_but_cannot_write_it(
     async with sessions() as session:
         uow = UnitOfWork(session)
 
-        assert await uow.value("SELECT uc(title) FROM lib.tracks WHERE id=1") == "ёлка"
+        assert await uow.value("SELECT sk(title) FROM lib.tracks WHERE id=1") == "елка"
         with pytest.raises(OperationalError, match="readonly"):
             await uow.execute("DELETE FROM lib.tracks")
 

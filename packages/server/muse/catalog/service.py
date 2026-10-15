@@ -43,12 +43,12 @@ from muse.catalog.domain import (
     album_name,
     first_albums,
     playlist_tracks,
-    search_pattern,
 )
 from muse.catalog.songs import SongFrames
 from muse.shared.cache import Cache
 from muse.shared.errors import DomainError
 from muse.shared.mp3 import STREAM_KIND, Joiner
+from muse.shared.text import search_key
 
 log = structlog.get_logger()
 
@@ -175,9 +175,10 @@ class Catalog:
         return await self.queries.album_head(album_id)
 
     async def search(self, query: str) -> SearchResult:
-        if len(query) < SEARCH_MIN_CHARS:
+        key = search_key(query)
+        if len(key) < SEARCH_MIN_CHARS:
             return {"artists": [], "albums": [], "tracks": []}
-        return await self.queries.search(search_pattern(query))
+        return await self.queries.search(key)
 
     async def track(self, track_id: int) -> Track:
         found = await self.queries.track(track_id)

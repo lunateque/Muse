@@ -47,10 +47,6 @@ def album_name(name: str, credit: str, artist: str) -> str:
     return f"Синглы · {credit}" if name == SINGLES and credit != artist else name
 
 
-def search_pattern(query: str) -> str:
-    return f"%{query.casefold()}%"
-
-
 class GenreCount(TypedDict):
     genre: str | None
     artists: int
@@ -261,7 +257,7 @@ class CatalogQueries(Protocol):
 
     async def album_head(self, album_id: int) -> AlbumHead | None: ...
 
-    async def search(self, pattern: str) -> SearchResult: ...
+    async def search(self, key: str) -> SearchResult: ...
 
     async def track(self, track_id: int) -> Track | None: ...
 

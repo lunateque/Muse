@@ -1,16 +1,23 @@
 from collections import Counter, defaultdict
+from typing import Any
 from urllib.parse import quote
 
 import httpx
 
 from muse.settings import Settings
 from tests.fixtures.catalog import (
+    ACDC,
+    ACDC_ALBUM,
     GENRES,
+    KID_CUDI,
+    MR_RAGER,
+    MR_RAGER_ALBUM,
     RENAMED_CANONICAL,
     RENAMED_TAG,
     SINGLES_ALBUM,
     SINGLES_CREDIT,
     SINGLES_DISPLAY,
+    YO_TITLE,
     FixtureCatalog,
 )
 from tests.server.catalog.support import fixture_rows, identity
@@ -119,11 +126,26 @@ async def test_search_needs_two_characters_and_folds_case(alice: httpx.AsyncClie
     found = (await alice.get("/api/search", params={"q": "пирОМ"})).json()
     single = (await alice.get("/api/search", params={"q": "a"})).json()
     many = (await alice.get("/api/search", params={"q": "ER"})).json()
+    dotted = (await alice.get("/api/search", params={"q": "a."})).json()
 
-    assert short == single == {"artists": [], "albums": [], "tracks": []}
+    assert short == single == dotted == {"artists": [], "albums": [], "tracks": []}
     assert RENAMED_CANONICAL in [a["name"] for a in found["artists"]]
     assert all(len(many[kind]) <= 20 for kind in ("artists", "albums", "tracks"))
     assert len(many["tracks"]) == 20
+
+
+async def test_search_ignores_punctuation_spacing_case_and_yo(alice: httpx.AsyncClient) -> None:
+    async def search(q: str) -> dict[str, list[Any]]:
+        return (await alice.get("/api/search", params={"q": q})).json()
+
+    for query in ("mr rager", "mr. rager", "MR.RAGER", "Mr  Rager"):
+        found = [(t["title"], t["artist"]) for t in (await search(query))["tracks"]]
+        assert (MR_RAGER, KID_CUDI) in found
+    legend = [a["name"] for a in (await search("legend of mr rager"))["albums"]]
+    assert MR_RAGER_ALBUM in legend
+    assert ACDC in [a["name"] for a in (await search("acdc"))["artists"]]
+    assert ACDC_ALBUM in [a["name"] for a in (await search("back in black"))["albums"]]
+    assert YO_TITLE in [t["title"] for t in (await search("все"))["tracks"]]
 
 
 async def test_only_playable_tracks_are_shown(

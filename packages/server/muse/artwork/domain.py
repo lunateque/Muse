@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Protocol
 
 from muse.catalog.domain import SINGLES
+from muse.shared.text import NON_WORD
 
 NO_COVER = "no cover"
 NO_ARTIST_IMAGE = "no artist image"
@@ -21,7 +22,6 @@ SHARED_TRACKS_SHARE = 0.6
 CREDIT_SPLIT = re.compile(r"\s*(?:,|&|\s+x\s+|\bfeat\.?\s|\bft\.?\s)\s*", re.IGNORECASE)
 BRACKETED = re.compile(r"\s*[(\[][^)\]]*[)\]]")
 RELEASE_SUFFIX = re.compile(r"\s+-\s+(single|ep)\s*$", re.IGNORECASE)
-NON_WORD = re.compile(r"[\W_]+")
 
 type Sleep = Callable[[float], Awaitable[None]]
 type Tracklist = Callable[[], Awaitable[list[str | None]]]

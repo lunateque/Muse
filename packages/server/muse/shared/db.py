@@ -8,6 +8,8 @@ from sqlalchemy import URL, CursorResult, event
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from muse.shared.text import search_key
+
 type Row = dict[str, Any]
 type Params = Sequence[object]
 type AfterCommit = Callable[[], Awaitable[None]]
@@ -21,12 +23,12 @@ def sqlite_uri(path: Path) -> str:
     return "file:" + quote(path.as_posix(), safe="/:")
 
 
-def casefold(value: object) -> object:
-    return value.casefold() if isinstance(value, str) else value
+def sql_search_key(value: object) -> object:
+    return search_key(value) if isinstance(value, str) else value
 
 
 def register_functions(dbapi_connection: Any, _record: object = None) -> None:
-    dbapi_connection.create_function("uc", 1, casefold, deterministic=True)
+    dbapi_connection.create_function("sk", 1, sql_search_key, deterministic=True)
 
 
 def _engine(database: Path, *, read_only: bool, timeout: float) -> AsyncEngine:

@@ -397,11 +397,11 @@ class Layout:
         self.playable = itertools.count()
         self.statuses = itertools.cycle(BROKEN_STATUSES)
 
-    def album(self, album_id: int, plan: AlbumPlan) -> AlbumRow:
+    def album(self, album_id: int, plan: AlbumPlan, titles: tuple[str, ...] = ()) -> AlbumRow:
         count = plan.size + plan.broken
         broken = set(self.rng.sample(range(1, count + 1), plan.broken))
         tracks = []
-        for num, title in enumerate(distinct_titles(self.rng, plan.genre, count), start=1):
+        for num, title in enumerate(titles or distinct_titles(self.rng, plan.genre, count), 1):
             status = next(self.statuses) if num in broken else "ok"
             untimed = plan.untimed and num == count
             dur = None if untimed else self.rng.randint(*plan.seconds)
@@ -411,7 +411,8 @@ class Layout:
     def track(
         self, album_id: int, plan: AlbumPlan, num: int, title: str, dur: int | None, status: str
     ) -> TrackRow:
-        rel = f"{plan.genre}/{plan.credit}/{plan.name}/{num:02d} - {title}.mp3"
+        folder = plan.name.replace(":", "")
+        rel = f"{plan.genre}/{plan.credit}/{folder}/{num:02d} - {title}.mp3"
         path = self.stored_path(rel, status)
         return TrackRow(
             next(self.track_ids),
@@ -455,6 +456,18 @@ def artist_rows(rng: random.Random, albums: list[AlbumRow]) -> list[Row]:
         mbid = random_mbid(rng) if canonical else None
         rows.append((name, mbid, rng.randint(1, 40), plan.genre, plan.tier, canonical))
     return rows
+
+
+KID_CUDI = "Kid Cudi"
+MR_RAGER = "Mr. Rager"
+MR_RAGER_ALBUM = "Man on the Moon II: The Legend of Mr. Rager"
+ACDC = "AC/DC"
+ACDC_ALBUM = "Back in Black"
+YO_TITLE = "Всё"
+EXTRA_ALBUMS = (
+    (AlbumPlan("Rap", KID_CUDI, KID_CUDI, MR_RAGER_ALBUM, 3, 2, 0), (MR_RAGER, YO_TITLE)),
+    (AlbumPlan("Indie", ACDC, ACDC, ACDC_ALBUM, 3, 1, 0), ("Hells Bells",)),
+)
 
 
 def write_track(path: Path, track_id: int, cover: bytes | None) -> None:
@@ -554,5 +567,11 @@ def build_catalog(root: Path) -> FixtureCatalog:
     cover = cover_jpeg()
     write_audio(library_dir, albums, cover)
     playlists = write_playlists(rng, library_dir, albums)
-    write_catalog(catalog_db, albums, artist_rows(rng, albums))
+    extra = [
+        layout.album(album_id, plan, titles)
+        for album_id, (plan, titles) in enumerate(EXTRA_ALBUMS, start=len(albums) + 1)
+    ]
+    write_audio(library_dir, extra, cover)
+    everything = [*albums, *extra]
+    write_catalog(catalog_db, everything, artist_rows(rng, everything))
     return FixtureCatalog(library_dir, catalog_db, cover, playlists)
