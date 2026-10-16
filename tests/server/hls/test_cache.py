@@ -25,10 +25,10 @@ async def test_the_least_recently_used_song_is_dropped_first() -> None:
     cache.size = 2
 
     for key in (1, 2, 1, 3, 1, 2):
-        await cache.get((key, 0, 0), builder(built, key))
+        await cache.get((key, 0, 0, 0, 0), builder(built, key))
 
     assert built == [1, 2, 3, 2]
-    assert list(cache.songs) == [(1, 0, 0), (2, 0, 0)]
+    assert list(cache.songs) == [(1, 0, 0, 0, 0), (2, 0, 0, 0, 0)]
 
 
 async def test_simultaneous_requests_for_one_song_read_it_once() -> None:
@@ -36,7 +36,7 @@ async def test_simultaneous_requests_for_one_song_read_it_once() -> None:
     answers: list[SongAudio] = []
 
     async def ask() -> None:
-        answers.append(await cache.get((7, 0, 0), builder(built, 7)))
+        answers.append(await cache.get((7, 0, 0, 0, 0), builder(built, 7)))
 
     async with anyio.create_task_group() as group:
         for _ in range(5):
@@ -55,8 +55,8 @@ async def test_a_failed_build_caches_nothing_and_is_tried_again() -> None:
         raise OSError("gone")
 
     with pytest.raises(OSError, match="gone"):
-        await cache.get((1, 0, 0), broken)
-    await cache.get((1, 0, 0), builder(built, 1))
+        await cache.get((1, 0, 0, 0, 0), broken)
+    await cache.get((1, 0, 0, 0, 0), builder(built, 1))
 
     assert built == [1]
     assert cache.building == {}

@@ -1,3 +1,5 @@
+from datetime import UTC, datetime, timedelta
+from email.utils import format_datetime
 from pathlib import Path
 
 import anyio
@@ -94,3 +96,63 @@ async def test_if_range_must_name_the_current_file(audio: Path) -> None:
 
     assert stale.status_code == 200
     assert (by_tag.status_code, by_date.status_code) == (206, 206)
+
+
+@pytest.mark.parametrize(
+    "sent",
+    ["{etag}", "W/{etag}", '"other", {etag}', '"other",W/{etag} ', "*"],
+)
+async def test_a_matching_if_none_match_is_304_with_the_validators(audio: Path, sent: str) -> None:
+    async with AsyncTestClient(make_app(audio)) as client:
+        current = (await client.get("/file")).headers
+        header = sent.format(etag=current["etag"])
+        done = await client.get("/file", headers={"If-None-Match": header})
+        ranged = await client.get("/file", headers={"If-None-Match": header, "Range": "bytes=0-9"})
+
+    for answer in (done, ranged):
+        assert (answer.status_code, answer.content) == (304, b"")
+        assert answer.headers["etag"] == current["etag"]
+        assert answer.headers["last-modified"] == current["last-modified"]
+        assert answer.headers["accept-ranges"] == "bytes"
+
+
+async def test_a_different_if_none_match_gets_the_body_and_beats_if_modified_since(
+    audio: Path,
+) -> None:
+    body = await anyio.Path(audio).read_bytes()
+    async with AsyncTestClient(make_app(audio)) as client:
+        current = (await client.get("/file")).headers
+        stale = await client.get(
+            "/file",
+            headers={"If-None-Match": '"old"', "If-Modified-Since": current["last-modified"]},
+        )
+        part = await client.get("/file", headers={"If-None-Match": '"old"', "Range": "bytes=0-9"})
+
+    assert (stale.status_code, stale.content) == (200, body)
+    assert (part.status_code, part.content) == (206, body[:10])
+
+
+async def test_if_modified_since_at_or_after_the_file_date_is_304(audio: Path) -> None:
+    modified = datetime.fromtimestamp((await anyio.Path(audio).stat()).st_mtime, UTC)
+    body = await anyio.Path(audio).read_bytes()
+    async with AsyncTestClient(make_app(audio)) as client:
+        exact = (await client.get("/file")).headers["last-modified"]
+        at = await client.get("/file", headers={"If-Modified-Since": exact})
+        later = await client.get(
+            "/file",
+            headers={
+                "If-Modified-Since": format_datetime(modified + timedelta(days=1), usegmt=True)
+            },
+        )
+        older = await client.get(
+            "/file",
+            headers={
+                "If-Modified-Since": format_datetime(modified - timedelta(seconds=1), usegmt=True)
+            },
+        )
+        garbage = await client.get("/file", headers={"If-Modified-Since": "yesterday"})
+
+    assert [(r.status_code, r.content) for r in (at, later)] == [(304, b"")] * 2
+    assert at.headers["last-modified"] == exact
+    assert (older.status_code, older.content) == (200, body)
+    assert (garbage.status_code, garbage.content) == (200, body)

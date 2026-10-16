@@ -28,10 +28,11 @@ from muse.shared.clock import Clock
 from muse.shared.db import UnitOfWork
 from muse.shared.errors import DomainError
 from muse.shared.mp3 import STREAM_KIND, Joiner
+from muse.shared.ranges import etag_matches
 
 log = structlog.get_logger()
 
-type SongKey = tuple[int, int, int]
+type SongKey = tuple[int, int, int, int, int]
 
 
 def song_infos(rows: Sequence[RunRow]) -> list[SongInfo]:
@@ -123,16 +124,26 @@ class HlsSessions:
         session, _, pieces = await self._timeline(session_id, wait=True)
         return playlist_text(session_id, pieces, ended=session.ended)
 
-    async def segment(self, session_id: str, song: int, index: int) -> bytes:
+    async def segment(
+        self, session_id: str, song: int, index: int, known: str | None
+    ) -> tuple[str, bytes | None]:
         _, rows, pieces = await self._timeline(session_id)
         if not has_segment(pieces, song, index):
             raise DomainError(NO_SEGMENT)
+        row, piece = rows[song], pieces[song]
+        stamp = await self.catalog.file_stamp(row["path"])
+        if stamp is None:
+            log.warning("hls segment", track=row["id"], song=song, index=index, why=FILE_GONE)
+            raise DomainError(SEGMENT_FAILED)
+        etag = f'"{stamp[0]:x}-{stamp[1]:x}-{piece.skip}-{piece.frames}-{index}"'
+        if etag_matches(known, etag):
+            return etag, None
         try:
-            audio = await self._audio(rows[song], pieces[song])
+            audio = await self._audio(row, piece, stamp)
         except RunCutError as cut:
-            log.warning("hls segment", track=rows[song]["id"], song=song, index=index, why=cut.why)
+            log.warning("hls segment", track=row["id"], song=song, index=index, why=cut.why)
             raise DomainError(SEGMENT_FAILED) from None
-        return segment_body(audio, index, segment_ticks(pieces, song, index))
+        return etag, segment_body(audio, index, segment_ticks(pieces, song, index))
 
     async def _timeline(
         self, session_id: str, *, wait: bool = False
@@ -153,9 +164,9 @@ class HlsSessions:
             await anyio.sleep(PLAYLIST_POLL_S)
         return session
 
-    async def _audio(self, row: RunRow, piece: SongPiece) -> SongAudio:
+    async def _audio(self, row: RunRow, piece: SongPiece, stamp: tuple[int, int]) -> SongAudio:
         async def build() -> SongAudio:
             joiner = Joiner(STREAM_KIND, skip=piece.skip, left=piece.frames)
             return SongAudio.of(await self.catalog.song_audio(row, joiner))
 
-        return await self.cache.get((row["id"], piece.skip, piece.frames), build)
+        return await self.cache.get((row["id"], *stamp, piece.skip, piece.frames), build)

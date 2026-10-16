@@ -70,11 +70,19 @@ async def playlist(name: FromPath[str], service: FromDishka[HlsSessions]) -> Res
 @get("/hls/{sid:str}/{song:int}/{name:str}", opt={"skip_auth": True})
 @inject
 async def segment(
-    sid: FromPath[str], song: FromPath[int], name: FromPath[str], service: FromDishka[HlsSessions]
+    sid: FromPath[str],
+    song: FromPath[int],
+    name: FromPath[str],
+    request: Request[Any, Any, Any],
+    service: FromDishka[HlsSessions],
 ) -> Response[bytes]:
     if (found := SEGMENT_NAME.fullmatch(name)) is None:
         raise DomainError(NO_SEGMENT)
-    return Response(await service.segment(sid, song, int(found[1])), media_type=MP3)
+    known = request.headers.get("if-none-match")
+    etag, body = await service.segment(sid, song, int(found[1]), known)
+    if body is None:
+        return Response(b"", status_code=304, media_type=MP3, headers={"ETag": etag})
+    return Response(body, media_type=MP3, headers={"ETag": etag})
 
 
 router = Router(

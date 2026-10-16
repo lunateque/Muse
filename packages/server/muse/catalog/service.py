@@ -86,6 +86,16 @@ class Catalog:
     async def track_file(self, stored: str | None) -> Path | None:
         return await anyio.to_thread.run_sync(self.storage.locate, stored)
 
+    async def file_stamp(self, stored: str | None) -> tuple[int, int] | None:
+        path = await self.track_file(stored)
+        if path is None:
+            return None
+        try:
+            stat = await anyio.Path(path).stat()
+        except OSError:
+            return None
+        return stat.st_mtime_ns, stat.st_size
+
     async def playable(self, ids: Sequence[int]) -> list[RunRow]:
         if not ids:
             return []

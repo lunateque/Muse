@@ -1,14 +1,33 @@
 import io
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
+from litestar.testing import AsyncTestClient
 from mutagen.id3 import ID3
 
+from muse.app import create_app
 from muse.catalog.domain import LibraryRoot
 from muse.catalog.infra.files import TrackFiles
+from muse.settings import Settings
 from tests.fixtures.catalog import FixtureCatalog
 from tests.server.catalog.support import fixture_rows
-from tests.server.support import WRITE
+from tests.server.support import ORIGIN, WRITE, signed_in
+
+
+@asynccontextmanager
+async def alice_over(settings: Settings, library_dir: Path) -> AsyncIterator[httpx.AsyncClient]:
+    moved = settings.model_copy(
+        update={"paths": settings.paths.model_copy(update={"library_dir": library_dir})}
+    )
+    application = create_app(moved)
+    async with AsyncTestClient(app=application, base_url=ORIGIN):
+        client = await signed_in(application, "alice")
+        try:
+            yield client
+        finally:
+            await client.aclose()
 
 
 def session_id(number: int = 0) -> str:

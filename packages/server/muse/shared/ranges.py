@@ -1,6 +1,6 @@
 import re
 from collections.abc import AsyncIterator
-from email.utils import formatdate
+from email.utils import formatdate, mktime_tz, parsedate_tz
 from pathlib import Path
 
 import anyio
@@ -50,12 +50,39 @@ async def chunks(path: Path, start: int, length: int) -> AsyncIterator[bytes]:
             yield data
 
 
+def etag_matches(header: str | None, etag: str) -> bool:
+    if header is None:
+        return False
+    if header.strip() == "*":
+        return True
+    return any(item.strip().removeprefix("W/") == etag for item in header.split(","))
+
+
+def unmodified_since(header: str | None, modified: int) -> bool:
+    parsed = parsedate_tz(header) if header else None
+    if parsed is None:
+        return False
+    try:
+        return modified <= mktime_tz(parsed)
+    except OverflowError, ValueError:
+        return False
+
+
+def is_unchanged(request: Request, etag: str, modified: int) -> bool:
+    known = request.headers.get("if-none-match")
+    if known is not None:
+        return etag_matches(known, etag)
+    return unmodified_since(request.headers.get("if-modified-since"), modified)
+
+
 async def file_response(path: Path, media_type: str, request: Request) -> Response[bytes] | Stream:
     stat = await anyio.Path(path).stat()
     size = stat.st_size
     etag = f'"{stat.st_mtime_ns:x}-{size:x}"'
     modified = formatdate(stat.st_mtime, usegmt=True)
     headers = {"Accept-Ranges": "bytes", "Last-Modified": modified, "ETag": etag}
+    if is_unchanged(request, etag, int(stat.st_mtime)):
+        return Response(b"", status_code=304, media_type=media_type, headers=headers)
     requested = request.headers.get("range")
     validator = request.headers.get("if-range")
     if validator is not None and validator not in (etag, modified):

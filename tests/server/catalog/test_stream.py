@@ -40,7 +40,7 @@ async def test_a_track_streams_byte_ranges_for_scrubbing(
 
     assert (part.status_code, part.content) == (206, body[:1024])
     assert part.headers["content-range"] == f"bytes 0-1023/{len(body)}"
-    assert part.headers["cache-control"] == "private, max-age=86400"
+    assert part.headers["cache-control"] == "private, no-cache"
     assert part.headers["content-type"] == "audio/mpeg"
     assert whole.status_code == 200
     assert whole.content == await anyio.Path(library.library_dir / relative).read_bytes()

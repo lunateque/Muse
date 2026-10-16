@@ -1,17 +1,13 @@
 import asyncio
 import shutil
 import time
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
-from litestar.testing import AsyncTestClient
 from structlog.testing import capture_logs
 
-from muse.app import create_app
 from muse.catalog.infra.files import TrackFiles
 from muse.hls.domain import SEG_FRAMES
 from muse.settings import Settings
@@ -20,6 +16,7 @@ from tests.fixtures.catalog import FixtureCatalog
 from tests.server.catalog.support import fixture_rows
 from tests.server.catalog.test_run import frames_of
 from tests.server.hls.support import (
+    alice_over,
     open_session,
     playlist_entries,
     session_id,
@@ -27,7 +24,7 @@ from tests.server.hls.support import (
     split_tag,
     stamp,
 )
-from tests.server.support import ORIGIN, WRITE, signed_in
+from tests.server.support import WRITE
 
 PER_SECOND = STREAM_KIND.rate / STREAM_KIND.samples
 TICKS_PER_FRAME = 2160
@@ -43,20 +40,6 @@ async def fetch_all(client: httpx.AsyncClient, sid: str) -> list[httpx.Response]
     playlist = await client.get(f"/api/hls/{sid}.m3u8")
     assert playlist.status_code == 200
     return [await client.get(f"/api/hls/{uri}") for _, uri in playlist_entries(playlist.text)]
-
-
-@asynccontextmanager
-async def alice_over(settings: Settings, library_dir: Path) -> AsyncIterator[httpx.AsyncClient]:
-    moved = settings.model_copy(
-        update={"paths": settings.paths.model_copy(update={"library_dir": library_dir})}
-    )
-    application = create_app(moved)
-    async with AsyncTestClient(app=application, base_url=ORIGIN):
-        client = await signed_in(application, "alice")
-        try:
-            yield client
-        finally:
-            await client.aclose()
 
 
 async def test_a_session_is_created_and_its_playlist_lists_the_songs_minus_the_start(
@@ -103,7 +86,7 @@ async def test_the_segments_of_a_session_join_into_exactly_the_run(
 
     assert {item.status_code for item in segments} == {200}
     assert {item.headers["content-type"] for item in segments} == {"audio/mpeg"}
-    assert {item.headers["cache-control"] for item in segments} == {"private, max-age=86400"}
+    assert {item.headers["cache-control"] for item in segments} == {"private, no-cache"}
     joined = b"".join(split_tag(item.content)[1] for item in segments)
     assert joined == run.content
 
