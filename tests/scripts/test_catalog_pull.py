@@ -180,7 +180,7 @@ def test_an_unchanged_catalog_without_a_stamp_refreshes_the_mount(host: Host) ->
     assert host.stamp.exists()
 
 
-def test_a_failed_periodic_refresh_keeps_the_stamp_stale(host: Host) -> None:
+def test_a_failed_periodic_refresh_drops_the_stamp(host: Host) -> None:
     (host.data / "state.sqlite").write_text("new", encoding="utf-8")
     host.stamp.touch()
     host.age_stamp(DAY_S + 600)
@@ -189,4 +189,16 @@ def test_a_failed_periodic_refresh_keeps_the_stamp_stale(host: Host) -> None:
 
     assert done.returncode == 0
     assert done.stderr == "catalog: lib refresh failed\n"
-    assert time.time() - host.stamp.stat().st_mtime > DAY_S
+    assert not host.stamp.exists()
+
+
+def test_a_failed_refresh_on_a_new_catalog_is_retried_on_the_next_run(host: Host) -> None:
+    host.stamp.touch()
+    first = host.run("rc")
+
+    second = host.run()
+
+    assert first.stderr == "catalog: lib refresh failed\n"
+    assert second.returncode == 0
+    assert host.calls_made()[0].endswith("http://127.0.0.1:5572/vfs/refresh")
+    assert host.stamp.exists()
