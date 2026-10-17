@@ -117,6 +117,16 @@ web client answers and `muse check` finds the user database intact at the expect
 non-empty catalog and a readable track file. Otherwise the saved database goes back and the
 previous release starts again.
 
+The library mount keeps directory listings in memory for 720 hours (`--dir-cache-time`) and
+takes file times from the bucket's own `LastModified` (`--use-server-modtime`), so a listener's
+request never waits for a slow bucket listing or a per-file `HEAD`. `muse-catalog-pull` refreshes
+the listings through the mount's local remote control (`127.0.0.1:5572`) before a new catalog
+goes live, and at least once a day while the catalog stays the same. The login is
+`RCLONE_RC_USER` and `RCLONE_RC_PASS` in `/etc/muse/storage.env` (see
+`deploy/storage.example.env`): rclone reads it from its environment and the pull script hands it
+to `curl` on stdin, so the password never appears in a process list. Only `muse-lib` and
+`muse-catalog` load that file; the internet-facing `muse` service must not.
+
 ## Backups
 
 `muse-backup.timer` packs the user database, `users.json`, `vapid.pem` and the notes into
