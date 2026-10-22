@@ -30,7 +30,7 @@ STUBS = {
     "sqlite3": '[ -f "$FAIL/integrity" ] && echo corrupt || echo ok',
     "chown": "exit 0",
 }
-DAY_S = 24 * 3600
+STAMP_LIMIT_S = 10 * 60
 
 pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="needs a POSIX shell")
 
@@ -101,7 +101,7 @@ def test_a_new_catalog_refreshes_the_mount_before_it_goes_live(host: Host) -> No
     assert done.returncode == 0
     assert host.calls_made() == [
         "rclone copyto",
-        "curl -sS --fail --max-time 300 -K - -d recursive=true http://127.0.0.1:5572/vfs/refresh",
+        "curl -sS --fail --max-time 900 -K - -d recursive=true http://127.0.0.1:5572/vfs/refresh",
         'login: user = "muse-lib:secret"',
         "live while refreshing: old",
     ]
@@ -146,10 +146,12 @@ def test_a_catalog_failing_the_integrity_check_never_refreshes_the_mount(host: H
     assert host.live() == "old"
 
 
-def test_an_unchanged_catalog_with_a_fresh_stamp_touches_nothing(host: Host) -> None:
+def test_an_unchanged_catalog_leaves_the_mount_alone_while_the_stamp_is_younger_than_ten_minutes(
+    host: Host,
+) -> None:
     (host.data / "state.sqlite").write_text("new", encoding="utf-8")
     host.stamp.touch()
-    host.age_stamp(DAY_S - 600)
+    host.age_stamp(STAMP_LIMIT_S - 60)
 
     done = host.run()
 
@@ -158,10 +160,12 @@ def test_an_unchanged_catalog_with_a_fresh_stamp_touches_nothing(host: Host) -> 
     assert done.stdout == ""
 
 
-def test_an_unchanged_catalog_with_a_day_old_stamp_refreshes_the_mount(host: Host) -> None:
+def test_an_unchanged_catalog_refreshes_the_mount_once_the_stamp_is_older_than_ten_minutes(
+    host: Host,
+) -> None:
     (host.data / "state.sqlite").write_text("new", encoding="utf-8")
     host.stamp.touch()
-    host.age_stamp(DAY_S + 600)
+    host.age_stamp(STAMP_LIMIT_S + 60)
 
     done = host.run()
 
@@ -183,7 +187,7 @@ def test_an_unchanged_catalog_without_a_stamp_refreshes_the_mount(host: Host) ->
 def test_a_failed_periodic_refresh_drops_the_stamp(host: Host) -> None:
     (host.data / "state.sqlite").write_text("new", encoding="utf-8")
     host.stamp.touch()
-    host.age_stamp(DAY_S + 600)
+    host.age_stamp(STAMP_LIMIT_S + 60)
 
     done = host.run("rc")
 

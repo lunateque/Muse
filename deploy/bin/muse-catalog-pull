@@ -2,9 +2,9 @@
 set -eu
 data=/srv/muse/data
 stamp=/var/lib/muse-lib-refreshed
-refresh_every_min=1440
+refresh_every_min=10
 refresh_lib() {
-  if out=$(printf 'user = "%s:%s"\n' "$RCLONE_RC_USER" "$RCLONE_RC_PASS" | curl -sS --fail --max-time 300 -K - -d recursive=true http://127.0.0.1:5572/vfs/refresh) && [ "${out#*Failed}" = "$out" ] && [ "${out#*OK}" != "$out" ]; then
+  if out=$(printf 'user = "%s:%s"\n' "$RCLONE_RC_USER" "$RCLONE_RC_PASS" | curl -sS --fail --max-time 900 -K - -d recursive=true http://127.0.0.1:5572/vfs/refresh) && [ "${out#*Failed}" = "$out" ] && [ "${out#*OK}" != "$out" ]; then
     touch "$stamp"
   else
     rm -f "$stamp"

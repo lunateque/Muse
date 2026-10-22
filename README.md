@@ -119,9 +119,14 @@ previous release starts again.
 
 The library mount keeps directory listings in memory for 720 hours (`--dir-cache-time`) and
 takes file times from the bucket's own `LastModified` (`--use-server-modtime`), so a listener's
-request never waits for a slow bucket listing or a per-file `HEAD`. `muse-catalog-pull` refreshes
-the listings through the mount's local remote control (`127.0.0.1:5572`) before a new catalog
-goes live, and at least once a day while the catalog stays the same. The login is
+request never waits for a slow bucket listing or a per-file `HEAD`. Files also change in place
+without a new catalog (embedded cover art, repaired lengths), and the mount would keep serving
+the old size and bytes of such a file for as long as its listing stays cached, so
+`muse-catalog-pull` refreshes the listings through the mount's local remote control
+(`127.0.0.1:5572`) before a new catalog goes live and again whenever the last successful refresh
+is more than 10 minutes old. That 10-minute stamp is the bound on how long an in-place
+replacement stays invisible: do not lengthen it unless the library gets a change trigger of its
+own. A refresh runs in the background of the mount and does not block requests. The login is
 `RCLONE_RC_USER` and `RCLONE_RC_PASS` in `/etc/muse/storage.env` (see
 `deploy/storage.example.env`): rclone reads it from its environment and the pull script hands it
 to `curl` on stdin, so the password never appears in a process list. Only `muse-lib` and
