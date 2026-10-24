@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -63,6 +64,40 @@ def test_published_paths_are_library_relative_and_spelled_as_on_disk(tmp_path: P
     assert pragma(out, "integrity_check") == "ok"
     assert source_paths == [path for path, _ in rows]
     assert pragma(source, "journal_mode") == "wal"
+
+
+def test_the_snapshot_carries_size_and_mtime_of_files_found_on_disk_and_the_source_stays_as_is(
+    tmp_path: Path,
+) -> None:
+    library = tmp_path / "lib"
+    touch(library, "Indie/X/a.mp3")
+    (library / "Indie/X/b.mp3").write_bytes(b"ID3-longer")
+    os.utime(library / "Indie/X/b.mp3", ns=(5_000_000_000, 1_700_000_000_123_456_700))
+    rows = [
+        (stored_path(library, "indie/x/B.MP3"), "ok"),
+        (stored_path(library, "Rock/Gone/c.mp3"), "ok"),
+        ("E:\\elsewhere\\e.mp3", "ok"),
+        (None, "pending"),
+    ]
+    source = tmp_path / "state.sqlite"
+    out = tmp_path / "work" / "catalog-publish.sqlite"
+    out.parent.mkdir()
+    create_catalog(source, rows).close()
+
+    make_snapshot(source, library, out)
+
+    with closing(sqlite3.connect(out)) as db:
+        identity = db.execute("SELECT path, size, mtime_ns FROM tracks ORDER BY id").fetchall()
+    with closing(sqlite3.connect(source)) as db:
+        source_columns = [row[1] for row in db.execute("PRAGMA table_info(tracks)")]
+    assert identity == [
+        ("Indie/X/b.mp3", 10, 1_700_000_000_123_456_700),
+        ("Rock/Gone/c.mp3", None, None),
+        (None, None, None),
+        (None, None, None),
+    ]
+    assert "size" not in source_columns
+    assert "mtime_ns" not in source_columns
 
 
 def test_a_damaged_catalog_keeps_the_previous_snapshot(tmp_path: Path) -> None:

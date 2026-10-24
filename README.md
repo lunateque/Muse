@@ -119,15 +119,21 @@ previous release starts again.
 
 The library mount keeps directory listings in memory for 720 hours (`--dir-cache-time`) and
 takes file times from the bucket's own `LastModified` (`--use-server-modtime`), so a listener's
-request never waits for a slow bucket listing or a per-file `HEAD`. Files also change in place
-without a new catalog (embedded cover art, repaired lengths), and the mount would keep serving
-the old size and bytes of such a file for as long as its listing stays cached, so
-`muse-catalog-pull` refreshes the listings through the mount's local remote control
-(`127.0.0.1:5572`) before a new catalog goes live and again whenever the last successful refresh
-is more than 10 minutes old. That 10-minute stamp is the bound on how long an in-place
-replacement stays invisible: do not lengthen it unless the library gets a change trigger of its
-own. A refresh runs in the background of the mount and does not block requests. The login is
-`RCLONE_RC_USER` and `RCLONE_RC_PASS` in `/etc/muse/storage.env` (see
+request never waits for a slow bucket listing or a per-file `HEAD`. The price is that a listing
+stays as the mount last read it: a directory listed while an upload was running misses the new
+files, and a file replaced in place (embedded cover art, repaired lengths) keeps its old size and
+bytes. The agent therefore publishes the identity of every library file (`size`, `mtime_ns`, next
+to the library-relative `path`) in the catalog snapshot, and `muse-catalog-pull` compares each new
+catalog with the live one: the directories of tracks that are new, gone or changed (and, for a
+genre the mount has never seen, the library root) are refreshed one at a time through the mount's
+local remote control (`127.0.0.1:5572`, `vfs/refresh dir=… recursive=false`, 60 s per call), their
+parents first, before the catalog goes live. A catalog that lacks the identity columns is compared
+by paths alone. The refreshes share a budget of 300 s per run; a directory that fails, times out or
+does not fit the budget is kept in `/var/lib/muse-lib-pending` and retried first by the next run,
+and the catalog goes live either way, so a slow bucket never holds a new catalog back for more
+than the budget. Once a day the pull also starts a recursive refresh in the mount's background
+(`_async=true`, the call returns a job id at once) as a backstop for changes a diff cannot see.
+The login is `RCLONE_RC_USER` and `RCLONE_RC_PASS` in `/etc/muse/storage.env` (see
 `deploy/storage.example.env`): rclone reads it from its environment and the pull script hands it
 to `curl` on stdin, so the password never appears in a process list. Only `muse-lib` and
 `muse-catalog` load that file; the internet-facing `muse` service must not.

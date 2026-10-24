@@ -14,6 +14,13 @@ class SnapshotError(Exception):
 
 
 @dataclass(frozen=True)
+class DiskFile:
+    relative: str
+    size: int
+    mtime_ns: int
+
+
+@dataclass(frozen=True)
 class SnapshotStats:
     rows: int
     rewritten: int
@@ -29,7 +36,7 @@ def make_snapshot(catalog_db: Path, library_dir: Path, out: Path) -> SnapshotSta
             mode = copy.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
             if mode != "delete":
                 raise SnapshotError(f"journal mode stayed {mode}")
-            stats = relocate_tracks(copy, library_dir, disk_names(library_dir))
+            stats = relocate_tracks(copy, library_dir, disk_files(library_dir))
             copy.commit()
             verdict = copy.execute("PRAGMA integrity_check").fetchall()
         if verdict != [("ok",)]:
@@ -47,34 +54,52 @@ def copy_live(catalog_db: Path, copy: sqlite3.Connection) -> None:
         live.backup(copy)
 
 
-def disk_names(library_dir: Path) -> dict[str, str]:
-    names: dict[str, str] = {}
-    for folder, _, files in os.walk(library_dir):
-        base = Path(folder).relative_to(library_dir)
-        for name in files:
-            relative = (base / name).as_posix()
-            names[relative.casefold()] = relative
-    return names
+def disk_files(library_dir: Path) -> dict[str, DiskFile]:
+    files: dict[str, DiskFile] = {}
+    pending = [("", library_dir)]
+    while pending:
+        prefix, folder = pending.pop()
+        with os.scandir(folder) as entries:
+            for entry in entries:
+                relative = f"{prefix}{entry.name}"
+                if entry.is_dir(follow_symlinks=False):
+                    pending.append((f"{relative}/", Path(entry.path)))
+                elif entry.is_file():
+                    seen = entry.stat()
+                    files[relative.casefold()] = DiskFile(relative, seen.st_size, seen.st_mtime_ns)
+    return files
 
 
 def relocate_tracks(
-    db: sqlite3.Connection, library_dir: Path, on_disk: dict[str, str]
+    db: sqlite3.Connection, library_dir: Path, on_disk: dict[str, DiskFile]
 ) -> SnapshotStats:
     root = library_dir.as_posix().rstrip("/") + "/"
+    db.execute("ALTER TABLE tracks ADD COLUMN size INTEGER")
+    db.execute("ALTER TABLE tracks ADD COLUMN mtime_ns INTEGER")
     query = "SELECT id, path, status FROM tracks WHERE path IS NOT NULL"
     rows = db.execute(query).fetchall()
-    changes: list[tuple[str | None, int]] = []
+    changes: list[tuple[str | None, int | None, int | None, int]] = []
     missing = 0
+    rewritten = 0
     for track_id, stored, status in rows:
         relative = library_relative(stored, root)
         found = on_disk.get(relative.casefold()) if relative is not None else None
         if found is None and status == "ok":
             missing += 1
-        relocated = found or relative
+        relocated = found.relative if found else relative
         if relocated != stored:
-            changes.append((relocated, track_id))
-    db.executemany("UPDATE tracks SET path = ? WHERE id = ?", changes)
-    return SnapshotStats(rows=len(rows), rewritten=len(changes), missing=missing)
+            rewritten += 1
+        if relocated != stored or found:
+            changes.append(
+                (
+                    relocated,
+                    found.size if found else None,
+                    found.mtime_ns if found else None,
+                    track_id,
+                )
+            )
+    db.executemany("UPDATE tracks SET path = ?, size = ?, mtime_ns = ? WHERE id = ?", changes)
+    return SnapshotStats(rows=len(rows), rewritten=rewritten, missing=missing)
 
 
 def library_relative(stored: str, root: str) -> str | None:
