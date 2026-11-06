@@ -1,5 +1,5 @@
 [Unit]
-Description=Muse catalog pull every five minutes
+Description=Muse catalog install every five minutes
 [Timer]
 OnBootSec=1min
 OnUnitActiveSec=5min

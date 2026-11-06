@@ -28,8 +28,8 @@ are deleted, and `/api/hls/` requests go to the stream log.
 The repository holds two Python packages:
 
 - `packages/server` (`muse`): the Litestar server.
-- `packages/agent` (`muse_agent`): the home agent. It publishes the library to object storage,
-  asks a local model for the daily playlists and pulls nightly backups.
+- `packages/agent` (`muse_agent`): the home agent. It publishes the library and the catalog to
+  the server over SFTP, asks a local model for the daily playlists and pulls nightly backups.
 
 ## Configuration
 
@@ -105,8 +105,8 @@ Set `MUSE_TEST_REDIS=redis://127.0.0.1:6379/15` to include the Redis cache tests
 
 ## Deployment
 
-`deploy/provision.sh` prepares an Ubuntu host: system users, directories, Redis, the read-only
-library mount, systemd units and the firewall. Releases ship from a clean checkout:
+`deploy/provision.sh` prepares an Ubuntu host: system users, directories, Redis, systemd units
+and the firewall. Releases ship from a clean checkout:
 
     uv run python scripts/deploy.py
 
@@ -117,26 +117,13 @@ web client answers and `muse check` finds the user database intact at the expect
 non-empty catalog and a readable track file. Otherwise the saved database goes back and the
 previous release starts again.
 
-The library mount keeps directory listings in memory for 720 hours (`--dir-cache-time`) and
-takes file times from the bucket's own `LastModified` (`--use-server-modtime`), so a listener's
-request never waits for a slow bucket listing or a per-file `HEAD`. The price is that a listing
-stays as the mount last read it: a directory listed while an upload was running misses the new
-files, and a file replaced in place (embedded cover art, repaired lengths) keeps its old size and
-bytes. The agent therefore publishes the identity of every library file (`size`, `mtime_ns`, next
-to the library-relative `path`) in the catalog snapshot, and `muse-catalog-pull` compares each new
-catalog with the live one: the directories of tracks that are new, gone or changed (and, for a
-genre the mount has never seen, the library root) are refreshed one at a time through the mount's
-local remote control (`127.0.0.1:5572`, `vfs/refresh dir=… recursive=false`, 60 s per call), their
-parents first, before the catalog goes live. A catalog that lacks the identity columns is compared
-by paths alone. The refreshes share a budget of 300 s per run; a directory that fails, times out or
-does not fit the budget is kept in `/var/lib/muse-lib-pending` and retried first by the next run,
-and the catalog goes live either way, so a slow bucket never holds a new catalog back for more
-than the budget. Once a day the pull also starts a recursive refresh in the mount's background
-(`_async=true`, the call returns a job id at once) as a backstop for changes a diff cannot see.
-The login is `RCLONE_RC_USER` and `RCLONE_RC_PASS` in `/etc/muse/storage.env` (see
-`deploy/storage.example.env`): rclone reads it from its environment and the pull script hands it
-to `curl` on stdin, so the password never appears in a process list. Only `muse-lib` and
-`muse-catalog` load that file; the internet-facing `muse` service must not.
+The library lives on the server's own disk (`library_dir = "/srv/muse/lib-local"`): the PC agent
+publishes the whole tree to the VPS over SFTP (rclone sftp remote) every publish cycle, and a
+track request reads the local disk instead of waiting on object storage. The agent also publishes
+the identity of every library file (`size`, `mtime_ns`, next to the library-relative `path`) in
+the catalog snapshot; `muse-catalog-install` runs every five minutes on the server, checks the
+incoming catalog (`md5`, SQLite integrity) and moves it over `/srv/muse/data/state.sqlite`, so a
+catalog and the file tree it describes always leave the same PC together.
 
 ## Backups
 

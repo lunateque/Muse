@@ -1,6 +1,6 @@
 [paths]
 data_dir = "/srv/muse/data"
-library_dir = "/srv/muse/lib"
+library_dir = "/srv/muse/lib-local"
 catalog_db = "/srv/muse/data/state.sqlite"
 web_dir = "/opt/muse/current/web"
 

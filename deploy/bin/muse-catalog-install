@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+src=/var/lib/muse-incoming/state.sqlite
+dst=/srv/muse/data/state.sqlite
+[ -f "$src" ] || exit 0
+[ "$(md5sum "$src" | cut -d' ' -f1)" = "$(md5sum "$dst" 2>/dev/null | cut -d' ' -f1)" ] && { echo "catalog: incoming unchanged, dropped"; rm -f "$src"; exit 0; }
+[ "$(sqlite3 -readonly "$src" 'PRAGMA integrity_check;')" = ok ] || { echo "catalog: integrity failed, dropped" >&2; rm -f "$src"; exit 1; }
+chown muse:muse "$src"; chmod 640 "$src"; mv -f "$src" "$dst"
+echo "catalog: installed $(md5sum "$dst" | cut -d' ' -f1)"

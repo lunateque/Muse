@@ -4,8 +4,8 @@ catalog_db = "D:/music/state.sqlite"
 work_dir = "D:/music/agent"        # agent.log, catalog-publish.sqlite, catalog.md5, prompt.md, backups/
 [rclone]
 exe = "rclone"
-library_remote = "storage:bucket/lib"
-catalog_remote = "storage:bucket/catalog/state.sqlite"
+library_remote = "vps:/srv/muse/lib-local"   # an rclone remote on the VPS (sftp)
+catalog_remote = "vps:/var/lib/muse-incoming/state.sqlite"
 backups_remote = "storage:bucket/backups"
 transfers = 16
 max_delete = 200

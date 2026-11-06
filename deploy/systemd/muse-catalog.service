@@ -1,6 +1,5 @@
 [Unit]
-Description=Muse catalog pull
+Description=Muse catalog install
 [Service]
 Type=oneshot
-EnvironmentFile=/etc/muse/storage.env
-ExecStart=/usr/local/bin/muse-catalog-pull
+ExecStart=/usr/local/bin/muse-catalog-install

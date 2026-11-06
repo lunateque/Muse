@@ -1,8 +1,7 @@
 [Unit]
 Description=Muse server
 Wants=network-online.target redis-server.service muse-text.service
-After=network-online.target redis-server.service muse-lib.service muse-text.service
-Requires=muse-lib.service
+After=network-online.target redis-server.service muse-text.service
 [Service]
 User=muse
 Group=muse
