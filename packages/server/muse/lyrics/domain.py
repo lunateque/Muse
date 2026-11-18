@@ -7,7 +7,7 @@ from muse.catalog.domain import SINGLES
 from muse.shared.errors import DomainError
 
 LRCLIB = "https://lrclib.net"
-USER_AGENT = "Muse (https://github.com/tempoloss/Muse)"
+USER_AGENT = "Muse (https://github.com/lunateque/Muse)"
 TIMEOUT_S = 8.0
 SLACK_S = 3.0
 DAY_S = 86400

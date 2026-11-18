@@ -99,7 +99,7 @@ async def test_the_route_serves_lrclib_through_the_wired_client_and_cache(
     assert request.url.params["artist_name"] == track["artist"]
     assert request.url.params["track_name"] == track["title"]
     assert request.url.params["duration"] == str(track["dur"])
-    assert api.user_agents == ["Muse (https://github.com/tempoloss/Muse)"]
+    assert api.user_agents == ["Muse (https://github.com/lunateque/Muse)"]
 
 
 async def test_a_dead_lrclib_is_503_through_the_wired_client(

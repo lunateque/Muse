@@ -91,7 +91,7 @@ async def test_the_user_agent_names_muse(api: Api, lrclib: Lrclib) -> None:
     await find(lrclib)
 
     [request] = api.seen
-    assert request.headers["user-agent"] == "Muse (https://github.com/tempoloss/Muse)"
+    assert request.headers["user-agent"] == "Muse (https://github.com/lunateque/Muse)"
 
 
 async def test_an_absent_album_and_duration_stay_out_of_the_query(api: Api, lrclib: Lrclib) -> None:
